@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Updates - Motion-Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-dark: #0a0a12;
+      --color-bg: #0f0f1a;
+      --color-bg-light: #1a1a2e;
+      --color-primary: #00bcd4;
+      --color-accent: #00bcd4;
+      --color-accent-alt: #f97316;
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-error: #ef4444;
+      --color-text: #e2e8f0;
+      --color-text-muted: #94a3b8;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --bg-card: #1a1a2e;
+      --bg-input: #0f111a;
+      --border: rgba(0, 188, 212, 0.2);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --radius-sm: 12px;
+      --radius-lg: 20px;
+      --transition: all 0.3s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-body); -webkit-tap-highlight-color: transparent; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(135deg, var(--color-bg) 0%, #0a0b14 100%);
+      color: var(--color-text); overflow-x: hidden; position: relative;
+      display: flex; flex-direction: column; touch-action: pan-y;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, rgba(0,188,212,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(249,115,22,0.05) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+
+    .sidebar, .admin-modal-content, #admin-updates-list, .comments-list { scrollbar-width: none; -ms-overflow-style: none; }
+    .sidebar::-webkit-scrollbar, .admin-modal-content::-webkit-scrollbar, #admin-updates-list::-webkit-scrollbar, .comments-list::-webkit-scrollbar { display: none; }
+
+    .top-nav { height: 70px; background: rgba(10,10,18,0.9); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 15px rgba(0,0,0,0.2); width: 100%; }
+    .nav-left { display: flex; align-items: center; gap: 18px; }
+    .hamburger { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,188,212,0.1); border-radius: 12px; border: 1px solid var(--border); color: var(--color-primary); font-size: 1.1rem; cursor: pointer; transition: var(--transition); }
+    .brand { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; cursor: pointer; }
+
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; z-index: 150; opacity: 0; transition: opacity 0.3s; }
+    .sidebar-overlay.active { display: block; opacity: 1; }
+    .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px); z-index: 200; transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow: 10px 0 40px rgba(0,0,0,0.5); border-right: 1px solid var(--border); padding: 2rem 1.5rem; overflow-y: auto; display: flex; flex-direction: column; }
+    .sidebar.open { left: 0; }
+    .sidebar-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); text-align: center; }
+    .sidebar-brand { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-menu { list-style: none; flex: 1; }
+    .sidebar-menu li { padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 6px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: var(--transition); font-size: 0.9rem; color: var(--color-text); }
+    .sidebar-menu li a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 14px; width: 100%; }
+    .sidebar-menu li:hover { background: rgba(0,188,212,0.1); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 1.5rem 0; opacity: 0.3; }
+    .tools-dropdown-header { display: flex; align-items: center; justify-content: space-between; width: 100%; cursor: pointer; }
+    .coming-soon-badge { font-size: 0.6rem; background: var(--color-warning); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; white-space: nowrap; margin-left: auto; }
+    .tools-dropdown-items { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding-left: 10px; }
+    .tools-dropdown-items.open { max-height: 300px; }
+    .tools-dropdown-items li { opacity: 0.5; pointer-events: none; padding: 10px 15px; font-size: 0.85rem; }
+    .logout-item { padding: 16px 20px; border-radius: var(--radius-sm); margin-top: auto; display: flex; align-items: center; gap: 18px; cursor: pointer; transition: var(--transition); font-size: 0.95rem; color: #ef4444; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); }
+    .logout-item:hover { background: rgba(239,68,68,0.15); color: #ff6b6b; transform: translateX(5px); border-color: rgba(239,68,68,0.4); }
+
+    .top-banner { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: linear-gradient(135deg,var(--color-primary),#0891b2); color: #fff; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 5000; transition: top 0.5s cubic-bezier(0.175,0.885,0.32,1.275); display: flex; align-items: center; cursor: pointer; }
+    .top-banner.active { top: 20px; }
+    .banner-content { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .banner-content i { font-size: 1.5rem; }
+    .banner-content span { flex: 1; font-weight: 500; }
+
+    .logout-dialog { display: none; position: fixed; inset: 0; background: rgba(5,5,26,0.95); justify-content: center; align-items: center; z-index: 9999; padding: 20px; backdrop-filter: blur(10px); }
+    .logout-dialog.active { display: flex; }
+    .logout-content { background: rgba(15,17,30,0.95); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid rgba(0,188,212,0.2); box-shadow: 0 0 40px rgba(0,188,212,0.3); backdrop-filter: blur(10px); text-align: center; }
+    .logout-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+    .logout-confirm-btn, .logout-cancel-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; }
+    .logout-confirm-btn { background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; }
+    .logout-cancel-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(0,188,212,0.2); }
+
+    .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 20px; overflow-y: auto; }
+    .admin-modal-overlay.active { display: flex; }
+    .admin-modal-content { background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; border: 2px solid var(--color-primary); box-shadow: 0 10px 40px rgba(0,188,212,0.3); animation: modalSlideIn 0.3s ease; }
+    .back-to-home-btn { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; border-radius: 50px; padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: var(--transition); font-size: 0.9rem; font-weight: 600; z-index: 3001; box-shadow: 0 4px 15px rgba(0,188,212,0.3); }
+    @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .admin-form-group { margin-bottom: 20px; position: relative; }
+    .admin-form-label { display: block; color: var(--color-text); font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+    .admin-form-input, .admin-form-select { width: 100%; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--color-text); font-size: 0.95rem; transition: var(--transition); }
+    .admin-form-input:focus, .admin-form-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0,188,212,0.2); }
+    .admin-form-textarea { min-height: 100px; resize: vertical; white-space: pre-wrap; word-wrap: break-word; }
+    .password-wrapper { position: relative; width: 100%; }
+    .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: 5px; font-size: 1.1rem; transition: var(--transition); z-index: 2; }
+    .error-message { color: var(--color-error); font-size: 0.8rem; margin-top: 5px; display: none; }
+    .error-message.show { display: block; }
+    .admin-form-buttons { display: flex; gap: 15px; margin-top: 30px; }
+    .admin-form-submit { flex: 1; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; padding: 14px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+    .admin-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .admin-form-submit.loading { color: transparent !important; pointer-events: none; }
+    .admin-form-submit.loading::after { content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%; margin: -10px 0 0 -10px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    .admin-form-cancel { flex: 1; background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition); }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .delete-confirmation-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 5000; padding: 20px; }
+    .delete-confirmation-modal.active { display: flex; }
+    .delete-confirmation-content { background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 450px; width: 90%; border: 2px solid var(--color-error); box-shadow: 0 10px 40px rgba(239,68,68,0.3); animation: modalSlideIn 0.3s ease; text-align: center; }
+    .delete-confirmation-icon { font-size: 4em; color: var(--color-error); margin-bottom: 20px; }
+    .delete-confirmation-title { color: var(--color-error); font-size: 1.5em; margin-bottom: 15px; }
+    .delete-confirmation-message { color: var(--color-text); margin-bottom: 25px; }
+    .delete-confirmation-buttons { display: flex; gap: 15px; justify-content: center; }
+    .delete-confirm-btn { padding: 12px 24px; background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; position: relative; }
+    .delete-confirm-btn.loading { color: transparent !important; pointer-events: none; }
+    .delete-confirm-btn.loading::after { content: ''; position: absolute; width: 18px; height: 18px; top: 50%; left: 50%; margin: -9px 0 0 -9px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    .delete-cancel-btn { padding: 12px 24px; background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; }
+
+    .post-size-selector { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 15px; }
+    .post-size-option { padding: 12px; background: rgba(0,188,212,0.1); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; transition: var(--transition); font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .post-size-option.selected { background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border-color: var(--color-primary); }
+
+    .media-type-selector { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 15px; }
+    .media-type-option { padding: 12px; background: rgba(0,188,212,0.1); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; transition: var(--transition); font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .media-type-option.selected { background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border-color: var(--color-primary); }
+
+    .image-upload-container { display: flex; flex-direction: column; gap: 10px; }
+    .file-upload-wrapper { display: flex; align-items: center; gap: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .file-preview { width: 50px; height: 50px; border-radius: 8px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .file-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .file-upload-control { flex: 1; min-width: 0; }
+    .file-upload-label { background: rgba(0,188,212,0.1); color: var(--color-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; white-space: nowrap; }
+    .file-upload-hidden { position: absolute; opacity: 0; width: 0.1px; height: 0.1px; overflow: hidden; }
+    .remove-image-btn { background: rgba(239,68,68,0.2); color: var(--color-error); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; }
+    .add-image-btn { background: rgba(0,188,212,0.1); color: var(--color-primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+    .add-image-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .upload-status { display: none; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: var(--radius-sm); margin: 20px 0; font-weight: 600; }
+    .upload-status.success { display: flex; background: rgba(16,185,129,0.1); color: var(--color-success); border: 1px solid var(--color-success); }
+    .upload-status.error { display: flex; background: rgba(239,68,68,0.1); color: var(--color-error); border: 1px solid var(--color-error); }
+    .upload-status.loading { display: flex; background: rgba(0,188,212,0.1); color: var(--color-primary); border: 1px solid var(--color-primary); }
+
+    .success-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 400px; width: 90%; border: 2px solid var(--color-success); box-shadow: 0 10px 40px rgba(16,185,129,0.3); z-index: 5000; display: none; flex-direction: column; align-items: center; text-align: center; }
+    .success-popup.active { display: flex; }
+    .success-icon { font-size: 3.5em; color: var(--color-success); margin-bottom: 15px; }
+
+    .manage-updates-container { background: rgba(10,10,18,0.8); border-radius: var(--radius-lg); padding: 25px; margin-top: 30px; border: 1px solid rgba(0,188,212,0.2); }
+    .manage-updates-container h3 { color: var(--color-primary); font-family: var(--font-heading); margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid rgba(0,188,212,0.3); }
+    #admin-updates-list { max-height: 300px; overflow-y: auto; padding-right: 10px; }
+    .admin-update-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-update-info { flex: 1; }
+    .admin-update-title { font-weight: 600; color: var(--color-text); margin-bottom: 5px; }
+    .admin-update-meta { display: flex; gap: 15px; font-size: 0.85rem; color: var(--color-text-muted); flex-wrap: wrap; }
+    .admin-update-actions { display: flex; gap: 10px; }
+    .edit-update-btn, .delete-update-btn { padding: 8px 15px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; border: none; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+    .edit-update-btn { background: rgba(0,188,212,0.2); color: var(--color-primary); border: 1px solid rgba(0,188,212,0.3); }
+    .delete-update-btn { background: rgba(239,68,68,0.2); color: var(--color-error); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ============================================================
+       POLL STYLES — fixed-height, no layout shift on vote
+       ============================================================ */
+    .poll-card {
+      background: linear-gradient(145deg, #1a1a2e, #151a2a);
+      border: 1px solid rgba(0,188,212,0.2);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 15px 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+      contain: layout;
+    }
+    .poll-card::before {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(0,188,212,0.06) 0%, transparent 70%);
+      top: -60px; right: -80px;
+      pointer-events: none;
+    }
+    .poll-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,188,212,0.15);
+    }
+    .poll-icon-badge {
+      width: 32px; height: 32px; border-radius: 10px;
+      background: rgba(0,188,212,0.1); border: 1px solid rgba(0,188,212,0.25);
+      display: flex; align-items: center; justify-content: center;
+      color: #00bcd4; font-size: 0.85rem; flex-shrink: 0;
+    }
+    .poll-question-text {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px; color: #00bcd4;
+      flex: 1;
+    }
+    .poll-changeable-badge {
+      font-size: 0.6rem; background: rgba(249,115,22,0.15); color: #f97316;
+      padding: 2px 8px; border-radius: 8px; font-weight: 600; white-space: nowrap;
+    }
+    .poll-option-btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 48px;
+      padding: 10px 14px;
+      border-radius: 12px; margin-bottom: 8px;
+      background: rgba(24,34,54,0.5);
+      border: 1px solid rgba(31,44,69,0.5);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+      position: relative; overflow: hidden;
+      text-align: left; color: #cbd5e1;
+      font-size: 0.9rem; font-weight: 500; font-family: inherit;
+    }
+    .poll-option-btn:hover:not([disabled]):not(.no-hover) {
+      background: rgba(0,188,212,0.1);
+      border-color: rgba(0,188,212,0.35);
+      transform: translateX(3px);
+    }
+    .poll-option-btn[disabled] { cursor: default; }
+    .poll-option-btn.my-vote {
+      border-color: rgba(0,188,212,0.5);
+      background: rgba(0,188,212,0.07);
+    }
+    .poll-progress-bar {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(0,188,212,0.08), rgba(0,188,212,0.17));
+      border-radius: 12px;
+      border-right: 2px solid rgba(0,188,212,0.3);
+      transition: width 0.2s cubic-bezier(0.4,0,0.2,1);
+      z-index: 0;
+      pointer-events: none;
+    }
+    .poll-option-inner {
+      display: flex; align-items: center; gap: 10px;
+      position: relative; z-index: 1; width: 100%;
+    }
+    .poll-radio {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid #475569; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .poll-radio.selected {
+      border-color: #00bcd4; background: #00bcd4;
+    }
+    .poll-radio.selected::after {
+      content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+      font-size: 0.55rem; color: #fff;
+    }
+    .poll-opt-label { flex: 1; color: #e2e8f0; }
+    .poll-opt-stats {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      min-width: 72px; justify-content: flex-end;
+    }
+    .poll-vote-count {
+      font-size: 0.68rem; color: #64748b;
+      background: rgba(18,26,40,0.9); padding: 2px 7px;
+      border-radius: 8px; border: 1px solid rgba(30,42,63,0.5);
+    }
+    .poll-pct {
+      font-size: 0.88rem; font-weight: 700; color: #00bcd4;
+      min-width: 34px; text-align: right;
+    }
+    .poll-footer {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid rgba(0,188,212,0.1);
+      color: #94a3b8; font-size: 0.78rem;
+    }
+    .poll-footer i { color: #00bcd4; }
+    .poll-total-number { color: #e2e8f0; font-weight: 700; }
+    .poll-change-hint {
+      font-size: 0.68rem; color: #64748b; margin-left: 6px;
+      font-style: italic;
+    }
+
+    .poll-toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 12px 16px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .poll-toggle-label { font-size: 0.9rem; color: var(--color-text); font-weight: 500; }
+    .toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.15); transition: 0.3s; border-radius: 26px; border: 1px solid rgba(255,255,255,0.1); }
+    .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background: #fff; transition: 0.3s; border-radius: 50%; }
+    .toggle-switch input:checked + .toggle-slider { background: linear-gradient(135deg, #00bcd4, #f97316); border-color: transparent; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
+
+    .image-viewer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; }
+    .image-viewer-overlay.active { display: flex; }
+    .image-viewer-content { position: relative; max-width: 90%; max-height: 90%; }
+    .image-viewer-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 10px; }
+    .image-viewer-close { position: absolute; top: -50px; right: 0; background: rgba(0,0,0,0.8); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .image-viewer-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 20px; }
+    .image-viewer-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.8); color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; }
+    .image-viewer-dots { position: absolute; bottom: -40px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; }
+    .image-viewer-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; border: none; }
+    .image-viewer-dot.active { background: var(--color-primary); transform: scale(1.3); }
+
+    .main-content { flex: 1; padding: 20px; position: relative; z-index: 1; width: 100%; max-width: 1400px; margin: 0 auto; padding-top: 90px; padding-bottom: 100px; }
+    .updates-header { text-align: center; margin-bottom: 40px; }
+    .updates-header h1 { font-family: var(--font-heading); font-size: clamp(1.8em,5vw,2.8em); background: linear-gradient(135deg,var(--color-accent),var(--color-accent-alt)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 15px; letter-spacing: 2px; }
+    .updates-container { column-count: 3; column-gap: 25px; width: 100%; }
+    @media (max-width: 1024px) { .updates-container { column-count: 2; } }
+    @media (max-width: 768px) { .updates-container { column-count: 1; } }
+
+    .update-card { background: var(--color-bg-light); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; position: relative; z-index: 1; display: flex; flex-direction: column; break-inside: avoid; margin-bottom: 25px; width: 100%; word-wrap: break-word; overflow-wrap: break-word; }
+    .update-card.size-default .update-media-wrapper { aspect-ratio: auto; max-height: none; }
+    .update-card.size-1-1 .update-media-wrapper { aspect-ratio: 1/1; }
+    .update-card.size-16-9 .update-media-wrapper { aspect-ratio: 16/9; }
+    .update-card.size-4-5 .update-media-wrapper { aspect-ratio: 4/5; }
+    .update-card.size-9-16 .update-media-wrapper { aspect-ratio: 9/16; }
+    .update-media-wrapper { position: relative; overflow: hidden; border-radius: 16px 16px 0 0; background: var(--color-dark); cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; }
+    .update-media { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .video-player-inline { width: 100%; height: 100%; object-fit: cover; border-radius: 16px 16px 0 0; background: #000; display: block; }
+    .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 100%; display: flex; justify-content: space-between; padding: 0 15px; z-index: 3; }
+    .carousel-btn { width: 40px; height: 40px; background: rgba(0,0,0,0.8); color: #fff; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); font-size: 1.1rem; }
+    .carousel-dots { position: absolute; bottom: 15px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; z-index: 3; }
+    .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; border: none; }
+    .carousel-dot.active { background: var(--color-primary); transform: scale(1.3); }
+    .update-type-badge { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.7); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 700; z-index: 3; text-transform: uppercase; letter-spacing: 1px; backdrop-filter: blur(5px); }
+    .update-info { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .update-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px; flex-wrap: wrap; }
+    .update-title { flex: 1; min-width: 0; }
+    .update-title h3 { font-size: 1.2em; font-weight: 600; color: var(--color-text); margin-bottom: 5px; word-break: break-word; }
+    .update-date { background: linear-gradient(135deg,var(--color-accent),var(--color-accent-alt)); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; white-space: nowrap; }
+    .update-description { color: var(--color-text-muted); line-height: 1.6; margin-bottom: 15px; font-size: 0.95em; white-space: pre-wrap; word-wrap: break-word; }
+
+    .update-meta-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 10px 0; padding: 8px 12px;
+      background: rgba(0,0,0,0.15); border-radius: 8px;
+      font-size: 0.8rem; color: var(--color-text-muted);
+    }
+    .view-count-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.8rem; color: var(--color-text-muted);
+    }
+    .view-count-badge i { color: var(--color-primary); font-size: 0.75rem; }
+    .view-count-number {
+      color: var(--color-text); font-weight: 600;
+      transition: opacity 0.15s ease;
+    }
+
+    .user-info { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 10px; flex-wrap: wrap; gap: 8px; }
+    .username { font-size: 0.95em; font-weight: 500; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; word-break: break-word; }
+    .clickable-username { cursor: pointer; padding: 2px 6px; border-radius: 6px; color: var(--color-primary); }
+    .admin-badge { background: linear-gradient(135deg,var(--color-warning),#d97706); color: #fff; font-size: 0.65em; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; text-transform: uppercase; white-space: nowrap; }
+    .time { font-size: 0.85em; color: var(--color-text-muted); white-space: nowrap; }
+    .update-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 20px; }
+    .share-btn, .comment-btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .share-btn { background: linear-gradient(135deg,var(--color-success),#059669); color: #fff; }
+    .comment-btn { background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid rgba(255,255,255,0.2); }
+    .comment-count { background: var(--color-primary); color: #fff; font-size: 0.7em; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+
+    .comments-section { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .comments-section.active { display: block; }
+    .comments-list { max-height: 250px; overflow-y: auto; margin-bottom: 15px; padding-right: 10px; }
+    .comment-item { padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); position: relative; padding-bottom: 40px; }
+    .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-primary); cursor: pointer; flex-shrink: 0; }
+    .comment-author { font-weight: 600; font-size: 0.85em; color: var(--color-primary); cursor: pointer; }
+    .comment-time { font-size: 0.7em; color: var(--color-text-muted); margin-left: auto; white-space: nowrap; }
+    .comment-text { font-size: 0.85em; line-height: 1.5; color: var(--color-text); white-space: pre-wrap; word-wrap: break-word; padding-right: 60px; }
+    .comment-user-actions { position: absolute; bottom: 8px; right: 12px; display: flex; gap: 8px; }
+    .comment-user-edit, .comment-user-delete { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); border: none; color: #fff; cursor: pointer; padding: 6px 12px; font-size: 0.7rem; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+    .comment-user-edit { background: rgba(0,188,212,0.8); }
+    .comment-user-delete { background: rgba(239,68,68,0.8); }
+    .edit-comment-input { width: 100%; padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--color-primary); border-radius: 8px; color: var(--color-text); font-size: 0.85em; resize: none; font-family: var(--font-body); }
+    .edit-comment-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
+    .edit-comment-save, .edit-comment-cancel { padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.75rem; }
+    .edit-comment-save { background: var(--color-success); color: #fff; }
+    .edit-comment-cancel { background: rgba(255,255,255,0.1); color: var(--color-text); }
+    .add-comment { display: flex; gap: 8px; margin-top: 15px; }
+    .comment-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--color-text); font-size: 0.9em; resize: none; min-height: 40px; max-height: 100px; font-family: var(--font-body); }
+    .comment-submit { background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+
+    .bottom-nav { height: 60px; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,188,212,0.3); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -2px 15px rgba(0,0,0,0.2); width: 100%; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--color-text-muted); font-size: 0.7rem; gap: 4px; text-decoration: none; padding: 8px; border-radius: 8px; position: relative; min-width: 60px; flex: 1; text-align: center; max-width: 25%; transition: var(--transition); }
+    .nav-item.active { color: var(--color-primary); }
+    .nav-item i { font-size: 1.3rem; transition: var(--transition); }
+    .icon-container { position: relative; display: inline-block; }
+    .notification-dot { position: absolute; top: -4px; right: -6px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--color-bg); display: none; z-index: 10; box-shadow: 0 0 8px rgba(239,68,68,0.6); animation: pulse 2s infinite; }
+    .notification-dot.active { display: block !important; }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(15,17,30,0.95); color: #fff; padding: 15px 25px; border-radius: 10px; border: 1px solid rgba(0,188,212,0.3); backdrop-filter: blur(10px); z-index: 2001; display: none; align-items: center; gap: 10px; max-width: 90%; }
+    .toast.show { display: flex; }
+
+    @media (max-width: 768px) {
+      .top-nav { height: 65px; padding: 0 1rem; }
+      .brand { font-size: 1.1rem; }
+      .main-content { padding: 70px 15px 100px; }
+      .updates-container { column-count: 1; }
+      .sidebar { width: 280px; }
+      .post-size-selector { grid-template-columns: repeat(3,1fr); gap: 8px; }
+      .media-type-selector { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .top-nav { height: 60px; padding: 0 0.8rem; }
+      .brand { font-size: 1rem; }
+      .main-content { padding: 65px 10px 90px; }
+      .bottom-nav { height: 55px; }
+      .nav-item { padding: 6px; font-size: 0.65rem; }
+      .nav-item i { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="topNotification" class="top-banner"><div class="banner-content"><i class="fa-solid fa-circle-info"></i><span id="bannerMessage">New notification!</span></div></div>
+<div class="logout-dialog" id="logoutDialog"><div class="logout-content"><h2>Logout Confirmation</h2><p>Are you sure you want to logout?</p><div class="logout-buttons"><button class="logout-confirm-btn" id="logoutConfirm">Yes, Logout</button><button class="logout-cancel-btn" id="logoutCancel">Cancel</button></div></div></div>
+<div class="delete-confirmation-modal" id="deleteConfirmationModal"><div class="delete-confirmation-content"><div class="delete-confirmation-icon"><i class="fas fa-trash-alt"></i></div><h2 class="delete-confirmation-title">Delete Update</h2><div class="delete-confirmation-message" id="deleteConfirmationMessage">Are you sure?</div><div class="delete-confirmation-buttons"><button class="delete-confirm-btn" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Delete</button><button class="delete-cancel-btn" id="cancelDeleteBtn"><i class="fas fa-times"></i> Cancel</button></div></div></div>
+<div class="success-popup" id="successPopup"><div class="success-icon"><i class="fas fa-check-circle"></i></div><h2 class="success-message">Update Posted!</h2><button class="admin-form-submit" onclick="closeSuccessPopup()"><i class="fas fa-check"></i> OK</button></div>
+
+<div class="image-viewer-overlay" id="imageViewer"><div class="image-viewer-content"><button class="image-viewer-close" onclick="closeImageViewer()"><i class="fas fa-times"></i></button><img class="image-viewer-img" id="viewerImage" src="" alt="Fullscreen view"><div class="image-viewer-nav"><button class="image-viewer-btn" onclick="viewerPrevImage()"><i class="fas fa-chevron-left"></i></button><button class="image-viewer-btn" onclick="viewerNextImage()"><i class="fas fa-chevron-right"></i></button></div><div class="image-viewer-dots" id="viewerDots"></div></div></div>
+
+<nav class="top-nav"><div class="nav-left"><div class="hamburger" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></div><a href="#" class="brand" id="brandLogo">MOTION-FLOW</a></div></nav>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header"><span class="sidebar-brand">MOTION FLOW</span></div>
+  <ul class="sidebar-menu">
+    <li><a href="../homepage.html"><i class="fa-solid fa-home"></i> Home</a></li>
+    <li><a href="../apk/apk.html"><i class="fa-solid fa-download"></i> APK Share</a></li>
+    <li><a href="../Users/users.html"><i class="fa-solid fa-users"></i> Users</a></li>
+    <li><a href="../Chats/chats.html"><i class="fa-solid fa-comments"></i> Messages</a></li>
+    <li><a href="../tutorial.html"><i class="fa-solid fa-graduation-cap"></i> Tutorials</a></li>
+    <li><a href="../Settings/settings.html"><i class="fa-solid fa-cog"></i> Settings</a></li>
+    <li onclick="toggleToolsDropdown(event)"><div class="tools-dropdown-header"><i class="fa-solid fa-toolbox"></i> Tools <span class="coming-soon-badge">Coming Soon</span></div></li>
+    <div class="tools-dropdown-items" id="toolsDropdownItems"><ul class="sidebar-menu" style="margin:0;padding:0;"><li><i class="fa-solid fa-arrow-down"></i> Down-graders</li><li><i class="fa-solid fa-file-lines"></i> Templates</li><li><i class="fa-solid fa-plus-circle"></i> CC Adder</li><li><i class="fa-solid fa-water"></i> Watermarks</li></ul></div>
+  </ul>
+  <div class="sidebar-divider"></div>
+  <div class="logout-item" id="logoutSidebarBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="admin-modal-overlay" id="adminLoginModal">
+  <div class="admin-modal-content">
+    <h2 style="margin-bottom:20px;color:var(--color-primary);text-align:center;"><i class="fa-solid fa-lock"></i> Admin Login</h2>
+    <div class="admin-form-group"><label class="admin-form-label">Email</label><input type="email" id="adminEmail" class="admin-form-input" placeholder="motionflow.admins@gmail.com"><div class="error-message" id="emailError">Email is incorrect</div></div>
+    <div class="admin-form-group"><label class="admin-form-label">Password</label><div class="password-wrapper"><input type="password" id="adminPassword" class="admin-form-input" placeholder="Enter password" style="padding-right:40px;"><button type="button" class="password-toggle" id="adminPasswordToggle"><i class="fa-solid fa-eye"></i></button></div><div class="error-message" id="passwordError">Password is incorrect</div></div>
+    <div class="admin-form-group" id="twoFactorSection" style="display:none;"><label class="admin-form-label">2FA Access Code</label><input type="text" id="admin2FACode" class="admin-form-input" placeholder="Enter access code"><div class="error-message" id="codeError">Access code is incorrect</div></div>
+    <div class="error-message" id="loginError" style="text-align:center;margin-bottom:15px;">Invalid credentials</div>
+    <div class="admin-form-buttons"><button class="admin-form-submit" id="adminLoginSubmit">Login</button><button class="admin-form-cancel" onclick="closeAdminModal()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- Admin Post Modal -->
+<div class="admin-modal-overlay" id="adminPostModal">
+  <button class="back-to-home-btn" onclick="closePostModal()"><i class="fa-solid fa-arrow-left"></i> Back to Updates</button>
+  <div class="admin-modal-content">
+    <h2 style="margin-bottom:20px;color:var(--color-primary);text-align:center;" id="postModalTitle"><i class="fa-solid fa-plus"></i> Create New Update</h2>
+    <div class="upload-status" id="uploadStatus"><i class="fas fa-spinner fa-spin"></i><span id="uploadStatusText">Posting...</span></div>
+    <form id="postUploadForm">
+      <div class="admin-form-group"><label class="admin-form-label">Admin Name *</label><input type="text" id="adminName" class="admin-form-input" placeholder="Admin Moonlight" required></div>
+      <div class="admin-form-group"><label class="admin-form-label">Update Title *</label><input type="text" id="updateTitle" class="admin-form-input" placeholder="Title" required></div>
+      <div class="admin-form-group"><label class="admin-form-label">Description *</label><textarea id="updateDescription" class="admin-form-input admin-form-textarea" placeholder="Description..." required></textarea></div>
+      <div class="admin-form-group"><label class="admin-form-label">Update Type *</label><select id="updateType" class="admin-form-input" required><option value="announcement">📢 Announcement</option><option value="feature">✨ Feature</option><option value="maintenance">🔧 Maintenance</option><option value="community">👥 Community</option></select></div>
+      <div class="admin-form-group"><label class="admin-form-label">Post Size *</label><div class="post-size-selector"><div class="post-size-option selected" data-size="default"><i class="fas fa-expand-alt"></i><span>Default</span></div><div class="post-size-option" data-size="1-1"><i class="fas fa-square"></i><span>1:1</span></div><div class="post-size-option" data-size="16-9"><i class="fas fa-desktop"></i><span>16:9</span></div><div class="post-size-option" data-size="4-5"><i class="fas fa-portrait"></i><span>4:5</span></div><div class="post-size-option" data-size="9-16"><i class="fas fa-mobile-alt"></i><span>9:16</span></div></div></div>
+      <div class="admin-form-group"><label class="admin-form-label">Media Type *</label><div class="media-type-selector"><div class="media-type-option selected" data-type="image"><i class="fas fa-image"></i><span>Images</span></div><div class="media-type-option" data-type="video"><i class="fas fa-video"></i><span>Video</span></div><div class="media-type-option" data-type="poll"><i class="fas fa-chart-bar"></i><span>Poll</span></div></div></div>
+      <div id="imageUploadSection"><div class="admin-form-group"><label class="admin-form-label">Upload Images (max 5) *</label><div class="image-upload-container" id="imageUploadContainer"></div><button type="button" class="add-image-btn" id="addImageBtn" onclick="addImageFileField()"><i class="fa-solid fa-plus"></i> Add Image</button></div></div>
+      <div id="videoUrlSection" style="display:none;"><div class="admin-form-group"><label class="admin-form-label">Video URL (Catbox) *</label><input type="url" id="videoUrl" class="admin-form-input" placeholder="https://files.catbox.moe/video.mp4"></div></div>
+      <div id="pollSection" style="display:none;">
+        <div class="admin-form-group"><label class="admin-form-label">Poll Question *</label><input type="text" id="pollQuestion" class="admin-form-input" placeholder="What do you think?"></div>
+        <div class="poll-toggle-row">
+          <span class="poll-toggle-label"><i class="fas fa-sync-alt"></i> Allow vote change (single choice, switchable)</span>
+          <label class="toggle-switch"><input type="checkbox" id="pollMultipleVotes"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="admin-form-group"><label class="admin-form-label">Poll Options (2-5) *</label>
+          <div id="pollOptionsContainer">
+            <div class="poll-input-group" style="display:flex;gap:10px;margin-bottom:8px;"><input type="text" class="admin-form-input poll-option-input" placeholder="Option 1"><button type="button" class="remove-image-btn poll-remove-btn" style="display:none;"><i class="fas fa-times"></i></button></div>
+            <div class="poll-input-group" style="display:flex;gap:10px;margin-bottom:8px;"><input type="text" class="admin-form-input poll-option-input" placeholder="Option 2"><button type="button" class="remove-image-btn poll-remove-btn" style="display:none;"><i class="fas fa-times"></i></button></div>
+          </div>
+          <button type="button" class="add-image-btn" id="addPollOptionBtn" onclick="addPollOptionField()" style="width:100%;"><i class="fa-solid fa-plus"></i> Add Option</button>
+        </div>
+      </div>
+      <div class="admin-form-buttons"><button type="submit" class="admin-form-submit" id="postSubmitBtn"><i class="fas fa-paper-plane"></i> Post Update</button><button type="button" class="admin-form-cancel" onclick="closePostModal()">Cancel</button></div>
+    </form>
+    <hr style="height:2px;background:linear-gradient(90deg,transparent,rgba(0,188,212,0.3),transparent);margin:30px 0;border:none;">
+    <div class="manage-updates-container"><h3>Manage Existing Updates</h3><div id="admin-updates-list"><div style="text-align:center;padding:40px;"><div class="loading-spinner" style="width:30px;height:30px;border:4px solid rgba(0,188,212,0.1);border-radius:50%;border-top-color:var(--color-accent);animation:spin 1s linear infinite;margin:0 auto;"></div></div></div></div>
+  </div>
+</div>
+
+<div class="main-content" id="mainContent">
+  <div class="updates-header"><h1>Motion-Flow Updates</h1><p>Latest news and announcements</p></div>
+  <div class="updates-container" id="updatesContainer"><div style="text-align:center;padding:100px;"><div class="loading-spinner" style="width:60px;height:60px;border:4px solid rgba(0,188,212,0.1);border-radius:50%;border-top-color:var(--color-accent);animation:spin 1s linear infinite;margin:0 auto 20px;"></div></div></div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="../homepage.html" class="nav-item" id="homeNavItem"><div class="icon-container"><i class="fa-solid fa-house"></i><span id="homeDot" class="notification-dot"></span></div><span>Home</span></a>
+  <a href="updates.html" class="nav-item active" onclick="markUpdatesSeen()"><div class="icon-container"><i class="fa-solid fa-bell"></i><span id="updatesDot" class="notification-dot"></span></div><span>Updates</span></a>
+  <a href="../Live_Chat/live.html" class="nav-item" id="chatNavItem" onclick="markChatSeen()"><div class="icon-container"><i class="fa-solid fa-comments"></i><span id="chatDot" class="notification-dot"></span></div><span>Live Chat</span></a>
+  <a href="../profile/profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+</nav>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle" id="toastIcon"></i><span id="toastMessage"></span></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { ref, set, getDatabase, onValue, get, update, remove, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+import { onAuthStateChanged, getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
+  authDomain: "motion-flow-47450.firebasestorage.app",
+  databaseURL: "https://motion-flow-47450-default-rtdb.firebaseio.com",
+  projectId: "motion-flow-47450",
+  storageBucket: "motion-flow-47450.firebasestorage.app",
+  messagingSenderId: "686875529848",
+  appId: "1:686875529848:web:48edf5164aaaf938cdd38d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase();
+const firestore = getFirestore(app);
+const APP_ID = 'motion-flow-47450';
+
+const $ = id => document.getElementById(id);
+const ADMIN_EMAIL = "motionflow.admins@gmail.com", ADMIN_PASSWORD = "MOTION-FLOW-ADMIN";
+
+let currentUserId = null, currentUserData = null, allUpdatesData = [], sidebarOpen = false;
+let isAdmin = false, adminClickCount = 0, adminClickTimer = null;
+let mediaType = 'image', postSize = 'default', imageFileCount = 1, maxImageFiles = 5, pollOptionCount = 2;
+let pendingDeleteId = null, isEditMode = false, currentEditId = null;
+let viewerImages = [], viewerCurrentIndex = 0;
+
+// Track in-flight votes to prevent double-taps
+const votingInProgress = new Set();
+
+// =============================================
+// VIEW COUNT — SessionStorage shield (FIXED)
+// =============================================
+let viewedUpdatesInSession = JSON.parse(sessionStorage.getItem('mf_viewed_updates') || '[]');
+
+const escapeHtml = s => !s ? '' : String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);
+const escapeOnclick = s => !s ? '' : String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+const getTimeAgo = ts => { const d=Date.now()-ts; const s=Math.floor(d/1000),m=Math.floor(s/60),h=Math.floor(m/60),dd=Math.floor(h/24); if(dd>0)return`${dd}d ago`;if(h>0)return`${h}h ago`;if(m>0)return`${m}m ago`;return'Just now'; };
+function showToast(m,t='success'){ $('toastMessage').textContent=m;$('toast').className=`toast ${t}`;$('toastIcon').className=t==='success'?'fas fa-check-circle':'fas fa-exclamation-circle';$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000); }
+function showTopAlert(msg){const b=$('topNotification');$('bannerMessage').innerText=msg;b.classList.add('active');document.title="⚠️ NEW UPDATE!";b.onclick=()=>{b.classList.remove('active');document.title="Updates - Motion-Flow";};setTimeout(()=>{b.classList.remove('active');document.title="Updates - Motion-Flow";},4000);}
+
+// FIXED: View count — increments only once per session per post
+async function recordView(updateId) {
+  if (!currentUserId || viewedUpdatesInSession.includes(updateId)) return;
+  
+  viewedUpdatesInSession.push(updateId);
+  sessionStorage.setItem('mf_viewed_updates', JSON.stringify(viewedUpdatesInSession));
+  
+  try {
+    const vRef = ref(db, `updates/${updateId}/views`);
+    await runTransaction(vRef, current => (current || 0) + 1);
+  } catch(e) { /* silently ignore */ }
+}
+
+function formatViewCount(n) {
+  if (!n || n < 1) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/,'') + 'K';
+  return String(n);
+}
+
+function updateViewCountDOM(updateId, count) {
+  const el = document.querySelector(`#post-${updateId} .view-count-number`);
+  if (el) {
+    el.style.opacity = '0';
+    requestAnimationFrame(() => {
+      el.textContent = formatViewCount(count);
+      el.style.opacity = '1';
+    });
+  }
+}
+
+// =============================================
+// NOTIFICATIONS
+// =============================================
+function listenForProductUpdates(){onValue(ref(db,'tools'),(snap)=>{if(!snap.exists())return;const d=snap.val();let lt=0;Object.values(d).forEach(t=>{if(t&&t.uploadedAt)lt=Math.max(lt,t.uploadedAt);});const ls=parseInt(localStorage.getItem('homeLastSeen')||'0');if(lt>ls){$('homeDot')?.classList.add('active');showTopAlert("New Product Added!");}});}
+function listenForChatNotifications(){const cp=`artifacts/${APP_ID}/public/data/liveChat/messages`;onValue(ref(db,cp),(snap)=>{if(!snap.exists())return;const ms=Object.values(snap.val());if(!ms.length)return;let lt=0;ms.forEach(m=>{const mt=m.timestamp||m.createdAt||m.time||0;if(mt>lt)lt=mt;});const ls=parseInt(localStorage.getItem('chatLastSeen')||'0');if(lt>ls){$('chatDot')?.classList.add('active');showTopAlert("New Live Chat Message!");}});}
+function initAllNotifications(){listenForProductUpdates();listenForChatNotifications();}
+window.markUpdatesSeen=()=>{localStorage.setItem('lastVisitUpdates',Date.now());$('updatesDot')?.classList.remove('active');};
+window.markChatSeen=()=>{localStorage.setItem('chatLastSeen',Date.now());$('chatDot')?.classList.remove('active');};
+
+window.toggleToolsDropdown=e=>{e.stopPropagation();$('toolsDropdownItems').classList.toggle('open');};
+document.addEventListener('click',e=>{if(!e.target.closest('.tools-dropdown-header')&&!e.target.closest('#toolsDropdownItems'))$('toolsDropdownItems')?.classList.remove('open');});
+
+function toggleSidebar(){sidebarOpen=!sidebarOpen;$('sidebar').classList.toggle('open',sidebarOpen);$('sidebarOverlay').classList.toggle('active',sidebarOpen);}
+$('hamburgerBtn').onclick=toggleSidebar;$('sidebarOverlay').onclick=toggleSidebar;
+$('logoutSidebarBtn').onclick=()=>$('logoutDialog').classList.add('active');
+$('logoutConfirm').onclick=async()=>{try{await signOut(auth);window.location.href="../index.html";}catch(e){showToast('Failed','error');}};
+$('logoutCancel').onclick=()=>$('logoutDialog').classList.remove('active');
+
+$('brandLogo').onclick=()=>{adminClickCount++;clearTimeout(adminClickTimer);adminClickTimer=setTimeout(()=>adminClickCount=0,2000);if(adminClickCount>=3){adminClickCount=0;$('adminLoginModal').classList.add('active');}};
+window.closeAdminModal=()=>{$('adminLoginModal').classList.remove('active');$('adminEmail').value='';$('adminPassword').value='';$('admin2FACode').value='';$('twoFactorSection').style.display='none';hideAllErrors();};
+window.closePostModal=()=>{$('adminPostModal').classList.remove('active');resetPostForm();$('uploadStatus').style.display='none';};
+window.openPostModal=()=>{$('adminPostModal').classList.add('active');resetPostForm();loadAdminUpdates();};
+
+function hideAllErrors(){['emailError','passwordError','codeError','loginError'].forEach(id=>$(id)?.classList.remove('show'));}
+
+$('adminPasswordToggle').onclick=()=>{const pw=$('adminPassword');const icon=$('adminPasswordToggle').querySelector('i');if(pw.type==='password'){pw.type='text';icon.className='fa-solid fa-eye-slash';}else{pw.type='password';icon.className='fa-solid fa-eye';}};
+
+$('adminLoginSubmit').onclick=async()=>{
+  const em=$('adminEmail').value.trim(),pw=$('adminPassword').value.trim(),fa=$('admin2FACode').value.trim();
+  hideAllErrors();
+  if(!em){$('emailError').textContent='Email is incorrect';$('emailError').classList.add('show');return;}
+  if(!pw){$('passwordError').textContent='Password is incorrect';$('passwordError').classList.add('show');return;}
+  if(em!==ADMIN_EMAIL){$('emailError').textContent='Email is incorrect';$('emailError').classList.add('show');return;}
+  if(pw!==ADMIN_PASSWORD){$('passwordError').textContent='Password is incorrect';$('passwordError').classList.add('show');return;}
+  if($('twoFactorSection').style.display==='none'){$('twoFactorSection').style.display='block';return;}
+  if(!fa){$('codeError').textContent='Access code is incorrect';$('codeError').classList.add('show');return;}
+  $('adminLoginSubmit').classList.add('loading');$('adminLoginSubmit').disabled=true;
+  try{
+    const s=await get(ref(db,'admin/accessCode'));
+    if(s.exists()&&s.val()===fa){isAdmin=true;closeAdminModal();showToast('Welcome Admin!','success');setTimeout(()=>openPostModal(),500);}
+    else{$('codeError').textContent='Access code is incorrect';$('codeError').classList.add('show');}
+  }catch(e){$('loginError').textContent='Error verifying code';$('loginError').classList.add('show');}
+  finally{$('adminLoginSubmit').classList.remove('loading');$('adminLoginSubmit').disabled=false;}
+};
+
+document.querySelectorAll('.post-size-option').forEach(o=>o.addEventListener('click',()=>{document.querySelectorAll('.post-size-option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');postSize=o.dataset.size;}));
+document.querySelectorAll('.media-type-option').forEach(o=>o.addEventListener('click',()=>{
+  document.querySelectorAll('.media-type-option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');mediaType=o.dataset.type;
+  $('imageUploadSection').style.display=mediaType==='image'?'block':'none';
+  $('videoUrlSection').style.display=mediaType==='video'?'block':'none';
+  $('pollSection').style.display=mediaType==='poll'?'block':'none';
+}));
+
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(f);r.onload=()=>res(r.result);r.onerror=rej;});}
+function createFileUploadWrapper(){
+  const w=document.createElement('div');w.className='file-upload-wrapper';
+  const fid='img_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
+  w.innerHTML=`<div class="file-preview"><i class="fas fa-image"></i></div><div class="file-upload-control"><input type="file" id="${fid}_inp" class="file-upload-hidden" accept="image/*"><label class="file-upload-label" for="${fid}_inp"><i class="fas fa-folder-open"></i> Choose Image</label><div class="file-name">No file chosen</div></div><button type="button" class="remove-image-btn"><i class="fas fa-trash"></i></button>`;
+  const inp=w.querySelector('input');
+  inp.onchange=e=>{const f=e.target.files[0];if(f){w.querySelector('.file-name').textContent=f.name;const r=new FileReader();r.onload=ev=>{w.querySelector('.file-preview').innerHTML=`<img src="${ev.target.result}" alt="Preview">`;};r.readAsDataURL(f);}};
+  w.querySelector('.remove-image-btn').onclick=()=>{w.remove();imageFileCount--;updateAddImageBtn();};
+  return w;
+}
+function updateAddImageBtn(){$('addImageBtn').disabled=imageFileCount>=maxImageFiles;}
+window.addImageFileField=()=>{if(imageFileCount>=maxImageFiles){showToast(`Max ${maxImageFiles} images`,'error');return;}$('imageUploadContainer').appendChild(createFileUploadWrapper());imageFileCount++;updateAddImageBtn();};
+
+function updatePollRemoveBtns(){
+  const inputs=document.querySelectorAll('.poll-option-input');
+  const btns=document.querySelectorAll('.poll-remove-btn');
+  inputs.forEach((_,i)=>{btns[i].style.display=inputs.length>2?'inline-flex':'none';});
+}
+window.addPollOptionField=function(){
+  if(pollOptionCount>=5){showToast('Max 5 options','error');return;}
+  const c=$('pollOptionsContainer');const d=document.createElement('div');d.style.cssText='display:flex;gap:10px;margin-bottom:8px;';
+  d.innerHTML=`<input type="text" class="admin-form-input poll-option-input" placeholder="Option ${pollOptionCount+1}"><button type="button" class="remove-image-btn poll-remove-btn"><i class="fas fa-times"></i></button>`;
+  d.querySelector('.poll-remove-btn').onclick=()=>{d.remove();pollOptionCount--;updatePollRemoveBtns();};
+  c.appendChild(d);pollOptionCount++;updatePollRemoveBtns();
+};
+
+// =============================================
+// FIXED VOTE — No double counting
+// =============================================
+window.votePoll = async function(updateId, optionIndex) {
+  if (!currentUserId) { showToast('Login required','error'); return; }
+  if (votingInProgress.has(updateId)) return;
+
+  const u = allUpdatesData.find(x => x.key === updateId);
+  if (!u || !u.poll) return;
+
+  const isChangeable = u.poll.multipleVotes === true;
+  const voterPath = `updates/${updateId}/poll/voters/${currentUserId}`;
+  
+  const prevVoteSnap = await get(ref(db, voterPath));
+  const prevVote = prevVoteSnap.exists() ? prevVoteSnap.val() : null;
+
+  if (prevVote === optionIndex) {
+    showToast('Already your vote!', 'error');
+    return;
+  }
+
+  if (!isChangeable && prevVote !== null) {
+    showToast('You already voted!', 'error');
+    return;
+  }
+
+  votingInProgress.add(updateId);
+
+  const updates = {};
+  updates[`updates/${updateId}/poll/voters/${currentUserId}`] = optionIndex;
+  
+  if (prevVote !== null) {
+    updates[`updates/${updateId}/poll/votes/${prevVote}`] = (u.poll.votes?.[prevVote] || 1) - 1;
+  }
+  updates[`updates/${updateId}/poll/votes/${optionIndex}`] = (u.poll.votes?.[optionIndex] || 0) + 1;
+
+  const pollClone = JSON.parse(JSON.stringify(u.poll));
+  if (!pollClone.votes) pollClone.votes = {};
+  if (prevVote !== null) pollClone.votes[prevVote] = Math.max(0, (pollClone.votes[prevVote] || 1) - 1);
+  pollClone.votes[optionIndex] = (pollClone.votes[optionIndex] || 0) + 1;
+  if (!pollClone.voters) pollClone.voters = {};
+  pollClone.voters[currentUserId] = optionIndex;
+
+  const idx = allUpdatesData.findIndex(x => x.key === updateId);
+  if (idx !== -1) allUpdatesData[idx].poll = pollClone;
+  renderPollInPlace(updateId, pollClone);
+
+  try {
+    await update(ref(db), updates);
+    showToast(prevVote !== null ? 'Vote changed!' : 'Vote recorded!', 'success');
+  } catch(e) {
+    if (idx !== -1) allUpdatesData[idx].poll = u.poll;
+    renderPollInPlace(updateId, u.poll);
+    showToast('Error voting', 'error');
+  } finally {
+    votingInProgress.delete(updateId);
+  }
+};
+
+function renderPollInPlace(updateId, poll) {
+  const pollContainer = document.querySelector(`#post-${updateId} .poll-card`);
+  if (!pollContainer) return;
+
+  const voterVote = poll.voters?.[currentUserId] ?? null;
+  const hasVoted = voterVote !== null;
+  const totalVotes = poll.votes ? Object.values(poll.votes).reduce((a,b) => (a||0)+(b||0), 0) : 0;
+  const isChangeable = poll.multipleVotes === true;
+
+  poll.options.forEach((opt, i) => {
+    const btn = pollContainer.querySelector(`[data-option-idx="${i}"]`);
+    if (!btn) return;
+
+    const votes = (poll.votes?.[i]) || 0;
+    const pct = totalVotes > 0 ? Math.round((votes/totalVotes)*100) : 0;
+    const isMyVote = voterVote === i;
+
+    const bar = btn.querySelector('.poll-progress-bar');
+    if (bar) bar.style.width = hasVoted ? pct + '%' : '0%';
+
+    const radio = btn.querySelector('.poll-radio');
+    if (radio) radio.className = `poll-radio${isMyVote ? ' selected' : ''}`;
+
+    const countEl = btn.querySelector('.poll-vote-count');
+    const pctEl = btn.querySelector('.poll-pct');
+    if (countEl) countEl.textContent = votes;
+    if (pctEl) pctEl.textContent = hasVoted ? pct + '%' : '';
+
+    btn.classList.toggle('my-vote', isMyVote);
+    btn.classList.toggle('no-hover', hasVoted && !isChangeable);
+    btn.disabled = hasVoted && !isChangeable;
+  });
+
+  const totalEl = pollContainer.querySelector('.poll-total-number');
+  if (totalEl) totalEl.textContent = totalVotes;
+}
+
+function showDeleteConfirmation(id,title){pendingDeleteId=id;$('deleteConfirmationMessage').textContent=`Delete "${title}"?`;$('deleteConfirmationModal').classList.add('active');$('confirmDeleteBtn').classList.remove('loading');$('confirmDeleteBtn').innerHTML='<i class="fas fa-trash"></i> Delete';}
+function closeDeleteConfirmation(){$('deleteConfirmationModal').classList.remove('active');pendingDeleteId=null;}
+$('confirmDeleteBtn').onclick=async()=>{if(!pendingDeleteId)return;const btn=$('confirmDeleteBtn');btn.classList.add('loading');btn.innerHTML='<span style="visibility:hidden;">Delete</span>';try{await remove(ref(db,`updates/${pendingDeleteId}`));closeDeleteConfirmation();showToast('Deleted','success');loadAdminUpdates();}catch(e){showToast('Error','error');btn.classList.remove('loading');btn.innerHTML='<i class="fas fa-trash"></i> Delete';}};
+$('cancelDeleteBtn').onclick=closeDeleteConfirmation;
+window.deleteUpdate=async id=>{try{const s=await get(ref(db,`updates/${id}`));const t=s.exists()?(s.val().title||'this update'):'this update';showDeleteConfirmation(id,t);}catch(e){showDeleteConfirmation(id,'this update');}};
+
+function resetPostForm(){
+  $('postUploadForm').reset();
+  $('imageUploadContainer').innerHTML='';$('imageUploadContainer').appendChild(createFileUploadWrapper());imageFileCount=1;updateAddImageBtn();
+  $('pollOptionsContainer').innerHTML='<div style="display:flex;gap:10px;margin-bottom:8px;"><input type="text" class="admin-form-input poll-option-input" placeholder="Option 1"><button type="button" class="remove-image-btn poll-remove-btn" style="display:none;"><i class="fas fa-times"></i></button></div><div style="display:flex;gap:10px;margin-bottom:8px;"><input type="text" class="admin-form-input poll-option-input" placeholder="Option 2"><button type="button" class="remove-image-btn poll-remove-btn" style="display:none;"><i class="fas fa-times"></i></button></div>';
+  pollOptionCount=2;$('pollMultipleVotes').checked=false;
+  mediaType='image';document.querySelectorAll('.media-type-option').forEach(o=>o.classList.remove('selected'));document.querySelector('.media-type-option[data-type="image"]').classList.add('selected');
+  $('imageUploadSection').style.display='block';$('videoUrlSection').style.display='none';$('pollSection').style.display='none';
+  postSize='default';document.querySelectorAll('.post-size-option').forEach(o=>o.classList.remove('selected'));document.querySelector('.post-size-option[data-size="default"]').classList.add('selected');
+  isEditMode=false;currentEditId=null;$('postModalTitle').innerHTML='<i class="fa-solid fa-plus"></i> Create New Update';$('postSubmitBtn').innerHTML='<i class="fas fa-paper-plane"></i> Post Update';
+}
+
+async function loadAdminUpdates(){
+  if(!isAdmin)return;
+  $('admin-updates-list').innerHTML='<div style="text-align:center;padding:40px;"><div class="loading-spinner" style="width:30px;height:30px;border:4px solid rgba(0,188,212,0.1);border-radius:50%;border-top-color:var(--color-accent);animation:spin 1s linear infinite;margin:0 auto;"></div></div>';
+  try{
+    const s=await get(ref(db,'updates'));
+    if(s.exists()){
+      const d=s.val();const ups=[];
+      Object.keys(d).forEach(k=>{const u=d[k];if(u)ups.push({key:k,title:u.title||"Untitled",authorName:u.authorName||"Admin",createdAt:u.createdAt||Date.now(),type:u.type||"announcement"});});
+      ups.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));$('admin-updates-list').innerHTML='';
+      if(!ups.length){$('admin-updates-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--color-text-muted);">No updates found.</div>';return;}
+      ups.forEach(u=>{const item=document.createElement('div');item.className='admin-update-item';item.innerHTML=`<div class="admin-update-info"><div class="admin-update-title">${escapeHtml(u.title)}</div><div class="admin-update-meta"><span>By: ${escapeHtml(u.authorName)}</span><span>Type: ${u.type}</span></div></div><div class="admin-update-actions"><button class="edit-update-btn" onclick="editUpdate('${escapeOnclick(u.key)}')"><i class="fas fa-edit"></i></button><button class="delete-update-btn" onclick="deleteUpdate('${escapeOnclick(u.key)}')"><i class="fas fa-trash"></i></button></div>`;$('admin-updates-list').appendChild(item);});
+    }else $('admin-updates-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--color-text-muted);">No updates found.</div>';
+  }catch(e){$('admin-updates-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--color-error);">Error</div>';}
+}
+
+window.editUpdate=async id=>{
+  if(!isAdmin)return;
+  try{
+    const s=await get(ref(db,`updates/${id}`));
+    if(s.exists()){const u=s.val();isEditMode=true;currentEditId=id;document.querySelector('.admin-modal-content').scrollTop=0;$('adminName').value=u.authorName||'';$('updateTitle').value=u.title||'';$('updateDescription').value=u.description||'';$('updateType').value=u.type||'announcement';postSize=u.postSize||'default';document.querySelectorAll('.post-size-option').forEach(o=>o.classList.remove('selected'));document.querySelector(`.post-size-option[data-size="${postSize}"]`)?.classList.add('selected');$('postModalTitle').innerHTML='<i class="fa-solid fa-edit"></i> Edit Update';$('postSubmitBtn').innerHTML='<i class="fas fa-save"></i> Save Changes';showToast('Loaded','success');}
+  }catch(e){showToast('Error','error');}
+};
+
+$('postUploadForm').onsubmit=async e=>{
+  e.preventDefault();if(!currentUserId||!isAdmin)return;
+  const an=$('adminName').value.trim(),ut=$('updateTitle').value.trim(),ud=$('updateDescription').value.trim(),uty=$('updateType').value;
+  if(!an||!ut||!ud){showToast('Fill all fields','error');return;}
+
+  if(mediaType==='poll'){
+    const pq=$('pollQuestion').value.trim();if(!pq){showToast('Question required','error');return;}
+    const opts=Array.from(document.querySelectorAll('.poll-option-input')).map(i=>i.value.trim()).filter(v=>v!=='');
+    if(opts.length<2){showToast('At least 2 options','error');return;}
+    const changeable=$('pollMultipleVotes').checked;
+    $('postSubmitBtn').classList.add('loading');$('postSubmitBtn').disabled=true;
+    const uid=isEditMode?currentEditId:'update_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+    const pd={id:uid,title:ut,description:ud,type:'poll',postSize,authorName:an,authorId:currentUserId,authorIsAdmin:true,updatedAt:Date.now(),...(isEditMode?{}:{createdAt:Date.now()}),poll:{question:pq,options:opts,multipleVotes:changeable,votes:{},voters:{}}};
+    try{await set(ref(db,`updates/${uid}`),pd);finishPost();}catch(er){handlePostError();}
+    return;
+  }
+
+  let mu=[];
+  if(mediaType==='image'){
+    const fis=document.querySelectorAll('.file-upload-hidden');const fs=Array.from(fis).map(i=>i.files[0]).filter(f=>f);
+    if(!fs.length){showToast('At least one image','error');return;}
+    $('postSubmitBtn').classList.add('loading');$('postSubmitBtn').disabled=true;
+    for(const f of fs)mu.push({type:'image',url:await fileToBase64(f)});
+  }else{
+    const vu=$('videoUrl').value.trim();if(!vu||!vu.startsWith('https://files.catbox.moe/')){showToast('Valid Catbox URL','error');return;}
+    mu=[{type:'video',url:vu}];$('postSubmitBtn').classList.add('loading');$('postSubmitBtn').disabled=true;
+  }
+  const uid=isEditMode?currentEditId:'update_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+  const pd={id:uid,title:ut,description:ud,type:uty,postSize,media:mu,authorName:an,authorId:currentUserId,authorIsAdmin:true,updatedAt:Date.now(),...(isEditMode?{}:{createdAt:Date.now()})};
+  try{await set(ref(db,`updates/${uid}`),pd);finishPost();}catch(er){handlePostError();}
+};
+
+function finishPost(){
+  $('uploadStatus').className='upload-status success';$('uploadStatusText').textContent='Posted!';$('uploadStatus').style.display='flex';
+  setTimeout(()=>{$('uploadStatus').style.display='none';$('postSubmitBtn').disabled=false;$('postSubmitBtn').classList.remove('loading');resetPostForm();loadAdminUpdates();if(!isEditMode){closePostModal();$('successPopup').classList.add('active');}},1500);
+}
+function handlePostError(){$('postSubmitBtn').classList.remove('loading');$('postSubmitBtn').disabled=false;$('uploadStatus').className='upload-status error';$('uploadStatusText').textContent='Error';$('uploadStatus').style.display='flex';setTimeout(()=>$('uploadStatus').style.display='none',3000);}
+
+window.closeSuccessPopup=()=>$('successPopup').classList.remove('active');
+
+function openImageViewer(imgs,idx){viewerImages=imgs;viewerCurrentIndex=idx;updateImageViewer();$('imageViewer').classList.add('active');document.body.style.overflow='hidden';}
+function closeImageViewer(){$('imageViewer').classList.remove('active');document.body.style.overflow='auto';}
+function updateImageViewer(){$('viewerImage').src=viewerImages[viewerCurrentIndex];$('viewerDots').innerHTML=viewerImages.map((_,i)=>`<button class="image-viewer-dot ${i===viewerCurrentIndex?'active':''}" onclick="viewerCurrentIndex=${i};updateImageViewer()"></button>`).join('');}
+function viewerPrevImage(){viewerCurrentIndex=(viewerCurrentIndex-1+viewerImages.length)%viewerImages.length;updateImageViewer();}
+function viewerNextImage(){viewerCurrentIndex=(viewerCurrentIndex+1)%viewerImages.length;updateImageViewer();}
+window.closeImageViewer=closeImageViewer;window.viewerPrevImage=viewerPrevImage;window.viewerNextImage=viewerNextImage;
+
+async function loadProfile(uid){try{const ps=[doc(firestore,"artifacts","motion-flow-v1","users",uid,"profile","settings"),doc(firestore,"users",uid)];for(const r of ps){try{const dc=await getDoc(r);if(dc.exists()){currentUserData=dc.data();return;}}catch(e){}}currentUserData={username:`User${uid.substring(0,6)}`,nickname:`User${uid.substring(0,6)}`,profileImage:null,userId:uid};}catch(e){currentUserData={username:`User${uid.substring(0,6)}`,nickname:`User${uid.substring(0,6)}`,profileImage:null,userId:uid};}}
+
+onAuthStateChanged(auth,async user=>{
+  if(user){currentUserId=user.uid;await loadProfile(currentUserId);loadUpdatesData();initAllNotifications();}
+  else window.location.href="../index.html";
+});
+
+function loadUpdatesData(){
+  if(!currentUserId){setTimeout(loadUpdatesData,1000);return;}
+  onValue(ref(db,"updates"),snap=>{
+    $('updatesContainer').innerHTML='';
+    if(snap.exists()){
+      const d=snap.val();allUpdatesData=[];
+      Object.keys(d).forEach(k=>{const u=d[k];if(!u)return;let media=u.media||[];let cc=u.comments?Object.keys(u.comments).length:0;
+        allUpdatesData.push({...u,key:k,media,postSize:u.postSize||'default',description:u.description||"",authorName:u.authorName||"Admin",authorId:u.authorId||"unknown",createdAt:u.createdAt||Date.now(),commentCount:cc,comments:u.comments||{},poll:u.poll||null,views:u.views||0});
+      });
+      allUpdatesData.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      renderUpdates();
+
+      allUpdatesData.forEach(u => {
+        onValue(ref(db, `updates/${u.key}/views`), snap => {
+          const count = snap.val() || 0;
+          updateViewCountDOM(u.key, count);
+          const idx = allUpdatesData.findIndex(x => x.key === u.key);
+          if (idx !== -1) allUpdatesData[idx].views = count;
+        });
+        onValue(ref(db, `updates/${u.key}/poll`), snap => {
+          if (!snap.exists()) return;
+          const idx = allUpdatesData.findIndex(x => x.key === u.key);
+          if (idx === -1) return;
+          allUpdatesData[idx].poll = snap.val();
+          renderPollInPlace(u.key, snap.val());
+        });
+      });
+    }else $('updatesContainer').innerHTML='<div class="empty-state"><div class="empty-icon"><i class="fas fa-newspaper"></i></div><h3>No Updates Yet</h3></div>';
+  });
+}
+
+async function renderUpdates(){$('updatesContainer').innerHTML='';for(const u of allUpdatesData)await createUpdateCard(u);}
+function linkify(text){return(text||'').replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>');}
+
+function buildPollHTML(update){
+  const poll = update.poll;
+  if(!poll || !poll.question) return '';
+  const voterVote = poll.voters?.[currentUserId] ?? null;
+  const hasVoted = voterVote !== null;
+  const isChangeable = poll.multipleVotes === true;
+  const totalVotes = poll.votes ? Object.values(poll.votes).reduce((a,b)=>(a||0)+(b||0),0) : 0;
+
+  let html = `<div class="poll-card">
+    <div class="poll-header">
+      <div class="poll-icon-badge"><i class="fas fa-chart-bar"></i></div>
+      <span class="poll-question-text">${escapeHtml(poll.question)}</span>
+      ${isChangeable ? '<span class="poll-changeable-badge">SWITCHABLE</span>' : ''}
+    </div>`;
+
+  poll.options.forEach((opt, i) => {
+    const votes = (poll.votes?.[i]) || 0;
+    const pct = totalVotes > 0 ? Math.round((votes/totalVotes)*100) : 0;
+    const isMyVote = voterVote === i;
+
+    html += `<button
+      class="poll-option-btn${isMyVote?' my-vote':''}${(hasVoted&&!isChangeable)?' no-hover':''}"
+      data-option-idx="${i}"
+      onclick="window.votePoll('${escapeOnclick(update.key)}',${i})"
+      ${(hasVoted && !isChangeable) ? 'disabled' : ''}>
+      <div class="poll-progress-bar" style="width:${hasVoted ? pct : 0}%"></div>
+      <div class="poll-option-inner">
+        <div class="poll-radio${isMyVote?' selected':''}"></div>
+        <span class="poll-opt-label">${escapeHtml(opt)}</span>
+        <div class="poll-opt-stats">
+          <span class="poll-vote-count">${hasVoted ? votes : ''}</span>
+          <span class="poll-pct">${hasVoted ? pct+'%' : ''}</span>
+        </div>
+      </div>
+    </button>`;
+  });
+
+  html += `<div class="poll-footer">
+    <i class="fas fa-users"></i>
+    <span class="poll-total-number">${totalVotes}</span>
+    <span>total vote${totalVotes!==1?'s':''}</span>
+    ${isChangeable && hasVoted ? '<span class="poll-change-hint">tap to change</span>' : ''}
+  </div></div>`;
+  return html;
+}
+
+async function createUpdateCard(update){
+  const hm=update.media&&update.media.length>0;
+  const hmm=update.media&&update.media.length>1;
+  const cc=update.commentCount||0;
+  const isVid=hm&&update.media[0].type==='video';
+  const psc=update.postSize?`size-${update.postSize}`:'size-default';
+  const c=document.createElement('div');
+  c.className=`update-card ${psc}`;
+  c.id=`post-${update.key}`;
+  const sl=`${location.origin}${location.pathname}#post-${update.key}`;
+  const anh=update.authorIsAdmin?`<span class="clickable-username" onclick="visitUserProfile('${escapeOnclick(update.authorId||'admin')}','${escapeOnclick(update.authorName)}')">${escapeHtml(update.authorName)}</span>`:`<span class="clickable-username">${escapeHtml(update.authorName)}</span>`;
+  const mh=hm?`<div class="update-media-wrapper">${isVid?`<video class="video-player-inline" controls><source src="${update.media[0].url}" type="video/mp4"></video>`:`<img src="${update.media[0].url}" class="update-media" onerror="this.src='https://via.placeholder.com/400x300/1a1a2e/00bcd4?text=Error'">`}${hmm&&!isVid?`<div class="carousel-nav"><button class="carousel-btn prev-btn"><i class="fas fa-chevron-left"></i></button><button class="carousel-btn next-btn"><i class="fas fa-chevron-right"></i></button></div><div class="carousel-dots">${update.media.map((_,i)=>`<button class="carousel-dot ${i===0?'active':''}" data-index="${i}"></button>`).join('')}</div>`:''}<div class="update-type-badge">${({announcement:'📢',feature:'✨',maintenance:'🔧',community:'👥',poll:'📊'})[update.type]||'📰'} ${update.type}</div></div>`:'';
+
+  const viewsBadge = `<div class="view-count-badge"><i class="fas fa-eye"></i><span class="view-count-number">${formatViewCount(update.views||0)}</span></div>`;
+
+  c.innerHTML=`${mh}<div class="update-info">
+    <div class="update-header">
+      <div class="update-title"><h3>${escapeHtml(update.title)}</h3></div>
+      <div class="update-date">${getTimeAgo(update.createdAt)}</div>
+    </div>
+    <div class="update-description">${linkify(update.description)}</div>
+    ${buildPollHTML(update)}
+    <div class="user-info">
+      <span class="username">${anh}${update.authorIsAdmin?'<span class="admin-badge"><i class="fas fa-crown"></i> Admin</span>':''}</span>
+      <span class="time">${new Date(update.createdAt).toLocaleDateString()}</span>
+    </div>
+    <div class="update-meta-row">
+      ${viewsBadge}
+      <span style="font-size:0.75rem;color:var(--color-text-muted)">${update.commentCount>0?update.commentCount+' comment'+(update.commentCount!==1?'s':''):''}</span>
+    </div>
+    <div class="update-actions">
+      <button class="share-btn" onclick="shareUpdate('${escapeOnclick(update.key)}','${escapeOnclick(update.title)}','${sl}')"><i class="fas fa-share-alt"></i> Share</button>
+      <button class="comment-btn" onclick="toggleComments('${escapeOnclick(update.key)}')"><i class="fas fa-comment"></i> Comments${cc>0?`<span class="comment-count">${cc}</span>`:''}</button>
+    </div>
+    <div class="comments-section" id="comments-${escapeOnclick(update.key)}">
+      <div class="comments-list" id="comments-list-${escapeOnclick(update.key)}"></div>
+      <div class="add-comment"><textarea class="comment-input" id="comment-input-${escapeOnclick(update.key)}" placeholder="Add comment..."></textarea><button class="comment-submit" onclick="addComment('${escapeOnclick(update.key)}')">Post</button></div>
+    </div>
+  </div>`;
+
+  $('updatesContainer').appendChild(c);
+
+  // FIXED: Record view with sessionStorage shield
+  setTimeout(() => recordView(update.key), 1500);
+
+  if(hm&&!isVid){
+    const mw=c.querySelector('.update-media-wrapper');
+    mw.onclick=()=>{const iu=update.media.filter(m=>m.type==='image').map(m=>m.url);if(iu.length)openImageViewer(iu,0);};
+    if(hmm){const me=mw.querySelector('.update-media'),pb=mw.querySelector('.prev-btn'),nb=mw.querySelector('.next-btn'),ds=mw.querySelectorAll('.carousel-dot');let ci=0;function uc(){me.src=update.media[ci].url;ds.forEach((d,i)=>d.classList.toggle('active',i===ci));}pb?.addEventListener('click',e=>{e.stopPropagation();ci=(ci-1+update.media.length)%update.media.length;uc();});nb?.addEventListener('click',e=>{e.stopPropagation();ci=(ci+1)%update.media.length;uc();});ds.forEach((d,i)=>d.addEventListener('click',e=>{e.stopPropagation();ci=i;uc();}));}
+  }
+}
+
+window.toggleComments=id=>{const s=document.getElementById(`comments-${id}`);if(s){s.classList.toggle('active');if(s.classList.contains('active'))loadComments(id);}};
+async function loadComments(id){const u=allUpdatesData.find(x=>x.key===id);if(!u||!u.comments)return;const cl=document.getElementById(`comments-list-${id}`);if(!cl)return;cl.innerHTML='';const cs=Object.entries(u.comments);if(!cs.length){cl.innerHTML='<div style="text-align:center;color:var(--color-text-muted);padding:15px;">No comments</div>';return;}cs.sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0));cs.forEach(([cid,c])=>{const d=document.createElement('div');d.className='comment-item';d.dataset.commentId=cid;const av=c.profileImage||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.userName)}&background=00bcd4&color=fff`;const own=c.userId===currentUserId;d.innerHTML=`<div class="comment-header"><img src="${av}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1a1a2e&color=fff'"><span class="comment-author">${escapeHtml(c.userName)}</span><span class="comment-time">${getTimeAgo(c.timestamp)}${c.edited?' (edited)':''}</span></div><div class="comment-text">${escapeHtml(c.text)}</div>${own?`<div class="comment-user-actions"><button class="comment-user-edit" onclick="editUserComment('${escapeOnclick(id)}','${escapeOnclick(cid)}','${escapeOnclick(c.text)}')"><i class="fas fa-edit"></i></button><button class="comment-user-delete" onclick="deleteUserComment('${escapeOnclick(id)}','${escapeOnclick(cid)}')"><i class="fas fa-trash"></i></button></div>`:''}`;cl.appendChild(d);});}
+window.addComment=async id=>{if(!currentUserId){showToast('Login','error');return;}const inp=document.getElementById(`comment-input-${id}`);if(!inp)return;const tx=inp.value.trim();if(!tx||tx.length>500){showToast(tx?'Max 500':'Enter comment','error');return;}const un=currentUserData?(currentUserData.nickname||currentUserData.username||`User${currentUserId.substring(0,6)}`):`User${currentUserId.substring(0,6)}`;const pi=currentUserData?.profileImage||null;const cid='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);try{await set(ref(db,`updates/${id}/comments/${cid}`),{id:cid,text:tx,userId:currentUserId,userName:un,profileImage:pi,timestamp:Date.now()});inp.value='';showToast('Posted!','success');loadComments(id);}catch(e){showToast('Error','error');}};
+window.editUserComment=(pid,cid,txt)=>{const el=document.querySelector(`[data-comment-id="${cid}"]`);if(!el)return;el.querySelector('.comment-text').innerHTML=`<textarea class="edit-comment-input" id="edit-input-${cid}">${escapeHtml(txt)}</textarea><div class="edit-comment-actions"><button class="edit-comment-save" onclick="saveEditedComment('${escapeOnclick(pid)}','${escapeOnclick(cid)}')">Save</button><button class="edit-comment-cancel" onclick="cancelEditComment('${escapeOnclick(pid)}','${escapeOnclick(cid)}')">Cancel</button></div>`;};
+window.saveEditedComment=async(pid,cid)=>{const inp=document.getElementById(`edit-input-${cid}`);const t=inp.value.trim();if(!t){showToast('Empty','error');return;}try{await update(ref(db,`updates/${pid}/comments/${cid}`),{text:t,edited:true,editedAt:Date.now()});showToast('Updated','success');loadComments(pid);}catch(e){showToast('Error','error');}};
+window.cancelEditComment=(pid,cid)=>loadComments(pid);
+window.deleteUserComment=async(pid,cid)=>{if(!confirm('Delete?'))return;try{await remove(ref(db,`updates/${pid}/comments/${cid}`));showToast('Deleted','success');loadComments(pid);}catch(e){showToast('Error','error');}};
+
+window.visitUserProfile=(uid)=>{if(!uid||uid==='unknown')return;window.location.href=`../profile/user-profile.html?userId=${uid}`;};
+window.shareUpdate=(id,title,link)=>{if(navigator.share)navigator.share({title,url:link}).catch(()=>navigator.clipboard.writeText(link).then(()=>showToast('Link copied!')));else navigator.clipboard.writeText(link).then(()=>showToast('Link copied!'));};
+
+document.addEventListener('DOMContentLoaded',()=>{localStorage.setItem('lastVisitUpdates',Date.now());$('imageUploadContainer').appendChild(createFileUploadWrapper());updateAddImageBtn();$('updatesDot')?.classList.remove('active');});
+</script>
+</body>
+</html>

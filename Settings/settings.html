@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Settings - Motion-Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-dark: #0a0a12;
+      --color-bg: #0f0f1a;
+      --color-bg-light: #1a1a2e;
+      --color-primary: #00bcd4;
+      --color-accent: #00bcd4;
+      --color-accent-alt: #f97316;
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-error: #ef4444;
+      --color-text: #e2e8f0;
+      --color-text-muted: #94a3b8;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --bg-card: #1a1a2e;
+      --bg-input: #0f111a;
+      --border: rgba(0, 188, 212, 0.2);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      --radius-sm: 12px;
+      --radius-lg: 20px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--font-body);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    html::-webkit-scrollbar { display: none; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--color-bg) 0%, #0a0b14 100%);
+      color: var(--color-text);
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      touch-action: pan-y;
+      width: 100%;
+      max-width: 100vw;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    body::-webkit-scrollbar { display: none; }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(0,188,212,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(249,115,22,0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .sidebar, .admin-modal-content { scrollbar-width: none; -ms-overflow-style: none; }
+    .sidebar::-webkit-scrollbar, .admin-modal-content::-webkit-scrollbar { display: none; }
+
+    /* --- TOP BANNER --- */
+    .top-banner {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 400px;
+      background: linear-gradient(135deg,var(--color-primary),#0891b2);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 5000;
+      transition: top 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .top-banner.active { top: 20px; }
+    .banner-content { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .banner-content i { font-size: 1.5rem; }
+    .banner-content span { flex: 1; font-weight: 500; }
+
+    /* --- TOP NAVIGATION --- */
+    .top-nav {
+      height: 70px;
+      background: rgba(10,10,18,0.9);
+      backdrop-filter: blur(15px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+      width: 100%;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .hamburger {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,188,212,0.1);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      color: var(--color-primary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .brand {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* --- SIDEBAR --- */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      z-index: 150;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .sidebar-overlay.active { display: block; opacity: 1; }
+
+    .sidebar {
+      position: fixed;
+      left: -320px;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(10,10,18,0.95);
+      backdrop-filter: blur(20px);
+      z-index: 200;
+      transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      box-shadow: 10px 0 40px rgba(0,0,0,0.5);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .sidebar-brand {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      flex: 1;
+    }
+
+    .sidebar-menu li {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.9rem;
+      color: var(--color-text);
+      border: 1px solid transparent;
+    }
+
+    .sidebar-menu li a {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .sidebar-menu li:hover {
+      background: rgba(0,188,212,0.1);
+    }
+
+    /* Active sidebar menu item - GLOW EFFECT */
+    .sidebar-menu li.active {
+      background: rgba(0,188,212,0.15);
+      color: var(--color-primary);
+      border: 1px solid rgba(0,188,212,0.5);
+      box-shadow: 0 0 20px rgba(0,188,212,0.2), inset 0 0 10px rgba(0,188,212,0.05);
+    }
+
+    .sidebar-menu li.active i {
+      color: var(--color-primary);
+      text-shadow: 0 0 12px rgba(0,188,212,0.6);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+      opacity: 0.3;
+    }
+
+    .tools-dropdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .coming-soon-badge {
+      font-size: 0.6rem;
+      background: var(--color-warning);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .tools-dropdown-items {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      padding-left: 10px;
+    }
+    .tools-dropdown-items.open { max-height: 300px; }
+    .tools-dropdown-items li { opacity: 0.5; pointer-events: none; padding: 10px 15px; font-size: 0.85rem; }
+
+    .logout-item {
+      padding: 16px 20px;
+      border-radius: var(--radius-sm);
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.95rem;
+      color: #ef4444;
+      background: rgba(239,68,68,0.05);
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+    .logout-item:hover {
+      background: rgba(239,68,68,0.15);
+      color: #ff6b6b;
+      transform: translateX(5px);
+      border-color: rgba(239,68,68,0.4);
+    }
+
+    /* --- LOGOUT DIALOG --- */
+    .logout-dialog {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5,5,26,0.95);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .logout-dialog.active { display: flex; }
+
+    .logout-content {
+      background: rgba(15,17,30,0.95);
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid rgba(0,188,212,0.2);
+      box-shadow: 0 0 40px rgba(0,188,212,0.3);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+
+    .logout-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .logout-confirm-btn, .logout-cancel-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      min-width: 100px;
+    }
+    .logout-confirm-btn { background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; }
+    .logout-cancel-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(0,188,212,0.2); }
+
+    /* --- MAIN CONTENT --- */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-top: 90px;
+      padding-bottom: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .settings-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 0 10px;
+    }
+
+    .settings-header h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.8em, 5vw, 2.8em);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-alt));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 15px;
+      letter-spacing: 2px;
+    }
+
+    .settings-header p {
+      color: var(--color-text-muted);
+      font-size: clamp(0.9em, 3vw, 1.1em);
+      opacity: 0.8;
+      line-height: 1.5;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .not-available-container {
+      background: rgba(10, 10, 18, 0.8);
+      border-radius: var(--radius-lg);
+      padding: 60px 40px;
+      border: 2px solid rgba(0, 188, 212, 0.3);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 90%;
+      backdrop-filter: blur(10px);
+      margin: 20px auto;
+    }
+
+    .not-available-icon {
+      font-size: 5em;
+      color: rgba(0, 188, 212, 0.5);
+      margin-bottom: 30px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .not-available-message {
+      font-size: 2em;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 20px;
+    }
+
+    .coming-soon-message {
+      color: var(--color-text-muted);
+      font-size: 1.1em;
+      line-height: 1.6;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .coming-soon-message strong {
+      color: var(--color-accent-alt);
+      font-weight: 600;
+    }
+
+    /* --- BOTTOM NAVIGATION --- */
+    .bottom-nav {
+      height: 60px;
+      background: rgba(10,10,18,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,188,212,0.3);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      box-shadow: 0 -2px 15px rgba(0,0,0,0.2);
+      width: 100%;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--color-text-muted);
+      font-size: 0.7rem;
+      gap: 4px;
+      text-decoration: none;
+      padding: 8px;
+      border-radius: 8px;
+      position: relative;
+      min-width: 60px;
+      flex: 1;
+      text-align: center;
+      max-width: 25%;
+      transition: var(--transition);
+    }
+
+    .nav-item.active { color: var(--color-primary); }
+
+    .nav-item i { font-size: 1.3rem; }
+
+    .icon-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: -4px;
+      right: -6px;
+      width: 10px;
+      height: 10px;
+      background-color: #ef4444;
+      border-radius: 50%;
+      border: 2px solid var(--color-bg);
+      display: none;
+      z-index: 10;
+      box-shadow: 0 0 8px rgba(239,68,68,0.6);
+      animation: pulse 2s infinite;
+    }
+    .notification-dot.active { display: block !important; }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* --- TOAST --- */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,17,30,0.95);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,188,212,0.3);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      z-index: 2001;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      max-width: 90%;
+    }
+    .toast.show { display: flex; }
+
+    @media (max-width: 768px) {
+      .top-nav { height: 65px; padding: 0 1rem; }
+      .brand { font-size: 1.1rem; }
+      .main-content { padding: 70px 15px 100px; }
+      .not-available-container { padding: 40px 20px; }
+      .not-available-icon { font-size: 4em; }
+      .not-available-message { font-size: 1.6em; }
+    }
+
+    @media (max-width: 480px) {
+      .top-nav { height: 60px; padding: 0 0.8rem; }
+      .brand { font-size: 1rem; }
+      .main-content { padding: 65px 10px 90px; }
+      .bottom-nav { height: 55px; }
+      .nav-item { padding: 6px; font-size: 0.65rem; }
+      .nav-item i { font-size: 1.2rem; }
+      .not-available-icon { font-size: 3em; }
+      .not-available-message { font-size: 1.3em; }
+      .coming-soon-message { font-size: 1em; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Banner Notification -->
+  <div class="top-banner" id="topNotification">
+    <div class="banner-content">
+      <i class="fa-solid fa-circle-info"></i>
+      <span id="bannerMessage">New notification!</span>
+    </div>
+  </div>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="hamburger" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></div>
+      <a href="#" class="brand" id="brandLogo">MOTION-FLOW</a>
+    </div>
+  </nav>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-brand">MOTION FLOW</span>
+    </div>
+
+    <ul class="sidebar-menu">
+      <li><a href="../homepage.html"><i class="fa-solid fa-home"></i> Home</a></li>
+      <li><a href="../apk/apk.html"><i class="fa-solid fa-download"></i> APK Share</a></li>
+      <li><a href="../Users/users.html"><i class="fa-solid fa-users"></i> Users</a></li>
+      <li><a href="../Chats/chats.html"><i class="fa-solid fa-comments"></i> Messages</a></li>
+      <li><a href="../tutorial.html"><i class="fa-solid fa-graduation-cap"></i> Tutorials</a></li>
+      <li class="active"><a href="../Settings/settings.html"><i class="fa-solid fa-cog"></i> Settings</a></li>
+      <li onclick="toggleToolsDropdown(event)">
+        <div class="tools-dropdown-header">
+          <i class="fa-solid fa-toolbox"></i> Tools
+          <span class="coming-soon-badge">Coming Soon</span>
+        </div>
+      </li>
+      <div class="tools-dropdown-items" id="toolsDropdownItems">
+        <ul class="sidebar-menu" style="margin:0;padding:0;">
+          <li><i class="fa-solid fa-arrow-down"></i> Down-graders</li>
+          <li><i class="fa-solid fa-file-lines"></i> Templates</li>
+          <li><i class="fa-solid fa-plus-circle"></i> CC Adder</li>
+          <li><i class="fa-solid fa-water"></i> Watermarks</li>
+        </ul>
+      </div>
+    </ul>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="logout-item" id="logoutSidebarBtn">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="settings-header">
+      <h1>Motion-Flow Settings</h1>
+      <p>Customize your profile and preferences</p>
+    </div>
+
+    <div class="not-available-container">
+      <div class="not-available-icon">
+        <i class="fas fa-tools"></i>
+      </div>
+      <div class="not-available-message">
+        Not Yet Available
+      </div>
+      <div class="coming-soon-message">
+        This feature will be available when we get good traffic / more users. <br>
+        <strong>Stay tuned for updates!</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="../homepage.html" class="nav-item" id="homeNavItem">
+      <div class="icon-container">
+        <i class="fa-solid fa-house"></i>
+        <span id="homeDot" class="notification-dot"></span>
+      </div>
+      <span>Home</span>
+    </a>
+
+    <a href="../updates/updates.html" class="nav-item" id="updatesNavItem" onclick="markUpdatesSeen()">
+      <div class="icon-container">
+        <i class="fa-solid fa-bell"></i>
+        <span id="updatesDot" class="notification-dot"></span>
+      </div>
+      <span>Updates</span>
+    </a>
+
+    <a href="../Live_Chat/live.html" class="nav-item" id="chatNavItem" onclick="markChatSeen()">
+      <div class="icon-container">
+        <i class="fa-solid fa-comments"></i>
+        <span id="chatDot" class="notification-dot"></span>
+      </div>
+      <span>Live Chat</span>
+    </a>
+
+    <a href="../profile/profile.html" class="nav-item">
+      <i class="fa-solid fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle" id="toastIcon"></i>
+    <span id="toastMessage">Copied!</span>
+  </div>
+
+  <!-- Logout Dialog -->
+  <div class="logout-dialog" id="logoutDialog">
+    <div class="logout-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="logout-buttons">
+        <button class="logout-confirm-btn" id="logoutConfirm">Yes, Logout</button>
+        <button class="logout-cancel-btn" id="logoutCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
+      authDomain: "motion-flow-47450.firebasestorage.app",
+      databaseURL: "https://motion-flow-47450-default-rtdb.firebaseio.com",
+      projectId: "motion-flow-47450",
+      storageBucket: "motion-flow-47450.firebasestorage.app",
+      messagingSenderId: "686875529848",
+      appId: "1:686875529848:web:48edf5164aaaf938cdd38d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase();
+    const APP_ID = 'motion-flow-47450';
+    const $ = id => document.getElementById(id);
+
+    let sidebarOpen = false;
+
+    function showToast(m, t = 'success') {
+      $('toastMessage').textContent = m;
+      $('toast').className = `toast ${t}`;
+      $('toastIcon').className = t === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+      $('toast').classList.add('show');
+      setTimeout(() => $('toast').classList.remove('show'), 3000);
+    }
+
+    function showTopAlert(msg) {
+      const b = $('topNotification');
+      $('bannerMessage').innerText = msg;
+      b.classList.add('active');
+      document.title = "⚠️";
+      b.onclick = () => {
+        b.classList.remove('active');
+        document.title = "Settings - Motion-Flow";
+      };
+      setTimeout(() => {
+        b.classList.remove('active');
+        document.title = "Settings - Motion-Flow";
+      }, 4000);
+    }
+
+    // Sidebar functions
+    function toggleSidebar() {
+      sidebarOpen = !sidebarOpen;
+      $('sidebar').classList.toggle('open', sidebarOpen);
+      $('sidebarOverlay').classList.toggle('active', sidebarOpen);
+      document.body.style.overflow = sidebarOpen ? 'hidden' : '';
+    }
+
+    $('hamburgerBtn').onclick = toggleSidebar;
+    $('sidebarOverlay').onclick = toggleSidebar;
+
+    // Tools dropdown
+    window.toggleToolsDropdown = function(e) {
+      e.stopPropagation();
+      $('toolsDropdownItems').classList.toggle('open');
+    };
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.tools-dropdown-header') && !e.target.closest('#toolsDropdownItems')) {
+        $('toolsDropdownItems')?.classList.remove('open');
+      }
+    });
+
+    // Logout with dialog
+    $('logoutSidebarBtn').onclick = () => $('logoutDialog').classList.add('active');
+    $('logoutConfirm').onclick = async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "../index.html";
+      } catch (e) {
+        showToast('Failed', 'error');
+        $('logoutDialog').classList.remove('active');
+      }
+    };
+    $('logoutCancel').onclick = () => $('logoutDialog').classList.remove('active');
+
+    // Notification listeners
+    function listenForHomeNotifications() {
+      localStorage.setItem('homeLastSeen', Date.now());
+      $('homeDot')?.classList.remove('active');
+      onValue(ref(db, 'tools'), () => {
+        localStorage.setItem('homeLastSeen', Date.now());
+        $('homeDot')?.classList.remove('active');
+      });
+    }
+
+    function listenForUpdatesNotifications() {
+      onValue(ref(db, 'updates'), (snap) => {
+        if (!snap.exists()) return;
+        const vs = Object.values(snap.val());
+        if (vs.length > 0) {
+          const latest = vs.reduce((a, b) => (a.createdAt > b.createdAt ? a : b));
+          const ls = parseInt(localStorage.getItem('lastVisitUpdates') || '0');
+          $('updatesDot')?.classList.toggle('active', latest.createdAt > ls);
+          if (latest.createdAt > ls) showTopAlert("New Platform Update Posted!");
+        }
+      });
+    }
+
+    function listenForChatNotifications() {
+      onValue(ref(db, `artifacts/${APP_ID}/public/data/liveChat/messages`), (snap) => {
+        if (!snap.exists()) return;
+        const ms = Object.values(snap.val());
+        if (!ms.length) return;
+        let lt = 0;
+        ms.forEach(m => {
+          const mt = m.timestamp || m.createdAt || m.time || 0;
+          if (mt > lt) lt = mt;
+        });
+        const ls = parseInt(localStorage.getItem('chatLastSeen') || '0');
+        if ($('chatDot') && lt > ls) {
+          $('chatDot').classList.add('active');
+          showTopAlert("New Message in Live Chat!");
+        }
+      });
+    }
+
+    function initAllNotifications() {
+      listenForHomeNotifications();
+      listenForUpdatesNotifications();
+      listenForChatNotifications();
+    }
+
+    window.markUpdatesSeen = function() {
+      localStorage.setItem('lastVisitUpdates', Date.now());
+      $('updatesDot')?.classList.remove('active');
+    };
+
+    window.markChatSeen = function() {
+      localStorage.setItem('chatLastSeen', Date.now());
+      $('chatDot')?.classList.remove('active');
+    };
+
+    // Auth state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        initAllNotifications();
+      } else {
+        window.location.href = "../index.html";
+      }
+    });
+
+    // Set active nav on load
+    document.addEventListener('DOMContentLoaded', () => {
+      localStorage.setItem('homeLastSeen', Date.now());
+      $('homeDot')?.classList.remove('active');
+    });
+
+    window.toggleSidebar = toggleSidebar;
+  </script>
+</body>
+
+</html>

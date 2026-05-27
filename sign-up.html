@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion Flow | Sign Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        :root {
+            --neon-orange: #ff9900;
+            --neon-cyan: #06b6d4;
+            --dark-bg: #0f0f1a;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--dark-bg);
+            color: #e5e7eb;
+        }
+        
+        .liquid-glass-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px); 
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (min-width: 768px) {
+            .liquid-glass-card {
+                width: auto;
+                max-width: none;
+            }
+        }
+
+        .glass-input {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            color: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s; 
+        }
+        
+        .glass-input:focus {
+            outline: none;
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 0 2px rgba(255, 153, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            font-size: 1rem;
+        }
+
+        .gradient-button {
+            background: linear-gradient(90deg, var(--neon-orange) 0%, var(--neon-cyan) 100%);
+            box-shadow: 0 4px 10px rgba(255, 153, 0, 0.3);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+            text-shadow: none;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .avatar-circle.selected {
+            border-color: var(--neon-orange);
+            box-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+            transform: scale(1.05);
+        }
+
+        .avatar-circle:hover {
+            border-color: var(--neon-cyan);
+            transform: scale(1.05);
+        }
+
+        .avatar-grid-slant {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .avatar-preview-container {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+            cursor: default;
+        }
+
+        .avatar-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .upload-message {
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 280px;
+        }
+
+        .step-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background-color: var(--neon-cyan);
+            transform: scale(1.2);
+        }
+
+        .username-valid {
+            border-color: #10b981 !important;
+        }
+
+        .username-invalid {
+            border-color: #ef4444 !important;
+        }
+
+        .username-checking {
+            border-color: #f59e0b !important;
+        }
+        
+        .nav-button-disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+        }
+
+        .resend-disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+
+        .back-arrow {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-arrow:hover {
+            background: rgba(255, 153, 0, 0.3);
+            border-color: var(--neon-orange);
+            transform: scale(1.05);
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; display: none; }
+        }
+
+        .step-back-arrow {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .step-back-arrow:hover {
+            background: rgba(255, 153, 0, 0.3);
+            border-color: var(--neon-orange);
+            transform: scale(1.05);
+        }
+
+        /* Brand header with back arrow */
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .brand-header .back-arrow-container {
+            flex-shrink: 0;
+        }
+        
+        .brand-header .brand-text {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .brand-header .brand-text h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+        }
+        
+        .brand-header .brand-text p {
+            font-size: 0.875rem;
+        }
+        
+        .brand-header .spacer {
+            width: 40px;
+            flex-shrink: 0;
+        }
+
+        /* Centered header (no back arrow) */
+        .centered-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .centered-header h1 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+        }
+        
+        .centered-header p {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    
+    <div id="app-container" class="w-full max-w-md">
+        
+        <!-- Sign Up View -->
+        <div id="signup-view">
+            <div class="liquid-glass-card p-6 sm:p-8 md:p-10 rounded-xl shadow-2xl">
+                <!-- Sign Up Header (no back arrow) -->
+                <div id="signup-header" class="centered-header">
+                    <h1 class="logo-text">MOTION FLOW</h1>
+                    <p class="text-gray-400">Create your account</p>
+                </div>
+
+                <div id="message-box" class="hidden p-4 mb-4 rounded-lg text-sm bg-opacity-30"></div>
+
+                <div id="signup-form" class="space-y-6">
+                    <div>
+                        <label for="nickname" class="block text-sm font-medium text-gray-200 mb-2">Nick Name</label>
+                        <input type="text" id="nickname" placeholder="Your cool nickname" class="w-full p-3 rounded-lg glass-input placeholder-gray-500" required>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-200 mb-2">Email Address</label>
+                        <input type="email" id="email" placeholder="you@example.com" class="w-full p-3 rounded-lg glass-input placeholder-gray-500" required>
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-200 mb-2">Password</label>
+                        <div class="password-container">
+                            <input type="password" id="password" placeholder="Min. 8 characters" class="w-full p-3 pr-12 rounded-lg glass-input placeholder-gray-500" minlength="8" required>
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')">
+                                <i class="fas fa-eye" id="eye-password"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" onclick="generateStrongPassword()" class="text-xs text-cyan-400">
+                                <i class="fas fa-key mr-1"></i> Generate Password
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="confirm-password" class="block text-sm font-medium text-gray-200 mb-2">Confirm Password</label>
+                        <div class="password-container">
+                            <input type="password" id="confirm-password" placeholder="Confirm your password" class="w-full p-3 pr-12 rounded-lg glass-input placeholder-gray-500" minlength="8" required>
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password')">
+                                <i class="fas fa-eye" id="eye-confirm-password"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center">
+                            <input type="checkbox" id="show-both-passwords" class="h-4 w-4 text-cyan-600 rounded focus:ring-cyan-500" onchange="toggleBothPasswords()">
+                            <label for="show-both-passwords" class="ml-2 text-xs text-gray-300">Show both passwords</label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm text-gray-200">Password Strength</span>
+                            <span id="password-strength-text" class="text-xs text-gray-400">Weak</span>
+                        </div>
+                        <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
+                            <div id="password-strength-meter" class="h-full bg-red-500 rounded-full w-0 transition-all duration-300"></div>
+                        </div>
+                    </div>
+                    
+                    <button id="signup-button" onclick="handleSignUp()" class="gradient-button w-full text-white font-semibold py-3 rounded-lg shadow-md" disabled>
+                        Sign Up Now
+                    </button>
+                    
+                    <div class="text-center">
+                        <p class="text-gray-400 text-sm">
+                            Already have an account?
+                            <a href="login.html" class="text-cyan-400 font-medium ml-1">
+                                Log In
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Verification Form - Brand Header with Back Arrow -->
+                <div id="verification-view" class="hidden">
+                    <div class="brand-header">
+                        <div class="back-arrow-container">
+                            <div class="back-arrow" onclick="goBackToSignUp()">
+                                <i class="fas fa-chevron-left"></i>
+                            </div>
+                        </div>
+                        <div class="brand-text">
+                            <h1 class="logo-text">MOTION FLOW</h1>
+                            <p class="text-gray-400 text-sm">Create your account</p>
+                        </div>
+                        <div class="spacer"></div>
+                    </div>
+                    
+                    <p id="verification-prompt" class="text-center text-gray-300 mb-4">
+                        A 6-digit verification code has been sent to <span id="target-email" class="font-bold text-cyan-400"></span>.
+                    </p>
+                    <p class="text-center text-xs text-gray-400 mb-6">
+                        <i class="fas fa-info-circle mr-1"></i> Your password will also be sent to your email.
+                    </p>
+                    
+                    <div id="countdown-container" class="mb-4 text-center">
+                        <span class="text-sm text-gray-400">Code expires in: </span>
+                        <span id="countdown-timer" class="text-xl font-bold text-cyan-400">60</span>
+                        <span class="text-sm text-gray-400"> seconds</span>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="verification-code" class="block text-sm font-medium text-gray-300 mb-2">Verification Code</label>
+                        <input type="text" id="verification-code" placeholder="Enter 6-digit code" maxlength="6" class="w-full p-3 text-center text-2xl rounded-lg glass-input tracking-wider placeholder-gray-500" required>
+                    </div>
+                    
+                    <button id="verify-button" onclick="handleVerify()" class="gradient-button w-full text-white font-semibold py-3 rounded-lg shadow-md">
+                        Verify & Complete Registration
+                    </button>
+                    
+                    <button id="resend-button" onclick="handleResendCode()" class="w-full mt-3 text-sm text-cyan-400 py-2 rounded-lg" disabled>
+                        Resend Code
+                    </button>
+                </div>
+                
+                <!-- Success View -->
+                <div id="success-view" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- Profile Setup View -->
+        <div id="profile-view" class="hidden">
+            <div class="liquid-glass-card p-6 md:p-8 rounded-xl">
+                
+                <div class="text-center mb-6">
+                    <h1 class="text-3xl md:text-4xl font-bold mb-2 font-['Orbitron'] logo-text">
+                        MOTION FLOW
+                    </h1>
+                    <p class="text-gray-400 text-sm md:text-base">Complete your profile</p>
+                </div>
+
+                <div class="step-dots">
+                    <div class="step-dot active" data-step="1"></div>
+                    <div class="step-dot" data-step="2"></div>
+                    <div class="step-dot" data-step="3"></div>
+                </div>
+
+                <div id="profile-message-box" class="hidden p-4 mb-4 rounded-lg text-sm bg-gray-900 border border-gray-800"></div>
+
+                <!-- STEP 1: Choose Avatar -->
+                <div id="step-1" class="step-container active">
+                    <h2 class="text-xl font-semibold mb-4 text-center">Choose Your Avatar</h2>
+                    
+                    <div class="avatar-preview-container">
+                        <img id="avatar-preview" src="https://files.catbox.moe/6zi1s7.jpg" class="avatar-preview" alt="Selected Avatar">
+                    </div>
+                    
+                    <div class="upload-message">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        You can change your profile picture from Edit Profile after account creation
+                    </div>
+                    
+                    <div class="avatar-grid-slant">
+                        <img src="https://files.catbox.moe/6zi1s7.jpg" data-id="boy1" class="avatar-circle selected" onclick="selectAvatar('boy1', this.src)">
+                        <img src="https://files.catbox.moe/solusu.jpg" data-id="boy2" class="avatar-circle" onclick="selectAvatar('boy2', this.src)">
+                        <img src="https://files.catbox.moe/zesren.jpg" data-id="boy3" class="avatar-circle" onclick="selectAvatar('boy3', this.src)">
+                        <img src="https://files.catbox.moe/9lea17.jpg" data-id="boy4" class="avatar-circle" onclick="selectAvatar('boy4', this.src)">
+                        <img src="https://files.catbox.moe/6wsx8j.jpg" data-id="boy5" class="avatar-circle" onclick="selectAvatar('boy5', this.src)">
+                        <img src="https://files.catbox.moe/jp0i9c.jpg" data-id="girl1" class="avatar-circle" onclick="selectAvatar('girl1', this.src)">
+                        <img src="https://files.catbox.moe/lvvflu.jpg" data-id="girl2" class="avatar-circle" onclick="selectAvatar('girl2', this.src)">
+                        <img src="https://files.catbox.moe/ukueea.jpg" data-id="girl3" class="avatar-circle" onclick="selectAvatar('girl3', this.src)">
+                        <img src="https://files.catbox.moe/78v4je.jpg" data-id="girl4" class="avatar-circle" onclick="selectAvatar('girl4', this.src)">
+                        <img src="https://files.catbox.moe/t6mk1v.jpg" data-id="girl5" class="avatar-circle" onclick="selectAvatar('girl5', this.src)">
+                    </div>
+
+                    <div class="space-y-4 mt-6">
+                        <div>
+                            <label for="profile-username" class="block text-sm font-medium text-gray-200 mb-2">Username *</label>
+                            <input type="text" id="profile-username" placeholder="e.g., motion_flow_user" 
+                                   class="glass-input w-full p-3 rounded-lg placeholder-gray-600" 
+                                   required minlength="3" maxlength="20">
+                            <div class="text-xs text-gray-400 mt-1 flex items-center">
+                                <i id="username-status-icon" class="fas fa-circle text-gray-500 mr-1 text-xs"></i>
+                                <span id="username-status-text">Enter a username</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="profile-nickname" class="block text-sm font-medium text-gray-200 mb-2">Nickname *</label>
+                            <input type="text" id="profile-nickname" placeholder="Your display name" 
+                                   class="glass-input w-full p-3 rounded-lg placeholder-gray-600" 
+                                   maxlength="30" required>
+                        </div>
+                    </div>
+
+                    <button id="step-1-next" class="gradient-button w-full text-white font-semibold py-3 rounded-lg shadow-md mt-6" disabled>
+                        Continue
+                    </button>
+                </div>
+
+                <!-- STEP 2: About You -->
+                <div id="step-2" class="step-container">
+                    <div class="flex items-center mb-6">
+                        <div class="step-back-arrow" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left text-cyan-400"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-center flex-1">About You</h2>
+                        <div style="width: 36px;"></div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="full-name" class="block text-sm font-medium text-gray-200 mb-2">Full Name (Private)</label>
+                            <input type="text" id="full-name" placeholder="Your full name (not public)" class="glass-input w-full p-3 rounded-lg placeholder-gray-600">
+                        </div>
+                        
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-200 mb-2">Location (Private)</label>
+                            <input type="text" id="location" placeholder="City, Country (not public)" class="glass-input w-full p-3 rounded-lg placeholder-gray-600">
+                        </div>
+                        
+                        <div>
+                            <label for="bio" class="block text-sm font-medium text-gray-200 mb-2">Bio (Public)</label>
+                            <textarea id="bio" rows="3" placeholder="Share your interests, skills, or a short introduction..." 
+                                      class="glass-input w-full p-3 rounded-lg placeholder-gray-600 resize-none"
+                                      maxlength="100"></textarea>
+                            <div class="text-xs text-gray-400 mt-1 flex justify-between">
+                                <span>Max 100 characters - No links allowed</span>
+                                <span id="bio-counter">0/100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="step-2-next" class="gradient-button w-full text-white font-semibold py-3 rounded-lg shadow-md mt-6">
+                        Continue
+                    </button>
+                </div>
+
+                <!-- STEP 3: Social Links -->
+                <div id="step-3" class="step-container">
+                    <div class="flex items-center mb-6">
+                        <div class="step-back-arrow" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-left text-cyan-400"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-center flex-1">Social Links</h2>
+                        <div style="width: 36px;"></div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-200 mb-2">Interests (Optional)</label>
+                        <div class="flex flex-wrap gap-2 mb-4" id="interests-container"></div>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" id="custom-interest" placeholder="Add custom interest" class="glass-input flex-1 p-3 rounded-lg placeholder-gray-600">
+                            <button type="button" id="add-interest-btn" class="bg-cyan-500 text-gray-900 px-4 py-3 rounded-lg font-semibold">
+                                <i class="fas fa-plus mr-2"></i>Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label for="instagram" class="block text-sm font-medium text-gray-200 mb-2">Instagram (Optional)</label>
+                            <div class="flex items-center gap-3">
+                                <i class="fab fa-instagram text-pink-500 w-6 text-center"></i>
+                                <input type="text" id="instagram" placeholder="Instagram username" class="glass-input flex-1 p-3 rounded-lg placeholder-gray-600">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="youtube" class="block text-sm font-medium text-gray-200 mb-2">YouTube (Optional)</label>
+                            <div class="flex items-center gap-3">
+                                <i class="fab fa-youtube text-red-500 w-6 text-center"></i>
+                                <input type="text" id="youtube" placeholder="YouTube channel name" class="glass-input flex-1 p-3 rounded-lg placeholder-gray-600">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="tiktok" class="block text-sm font-medium text-gray-200 mb-2">TikTok (Optional)</label>
+                            <div class="flex items-center gap-3">
+                                <i class="fab fa-tiktok w-6 text-center"></i>
+                                <input type="text" id="tiktok" placeholder="TikTok username" class="glass-input flex-1 p-3 rounded-lg placeholder-gray-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="enter-flow-button" class="w-full gradient-button text-white font-semibold py-3 rounded-lg shadow-md" disabled>
+                        ENTER THE FLOW
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+        <div class="liquid-glass-card w-full max-w-sm p-6 rounded-xl text-center">
+            <h3 id="modal-title" class="text-xl font-bold text-white mb-3"></h3>
+            <p id="modal-message" class="text-gray-300 mb-6"></p>
+            <div id="modal-button-container" class="flex justify-center gap-3">
+                <button onclick="closeModal()" class="gradient-button px-6 py-2 text-white rounded-lg">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
+            authDomain: "motion-flow-47450.firebaseapp.com",
+            projectId: "motion-flow-47450",
+            storageBucket: "motion-flow-47450.firebasestorage.app",
+            messagingSenderId: "686875529848",
+            appId: "1:686875529848:web:48edf5164aaaf938cdd38d",
+            measurementId: "G-K46N8C1HFQ"
+        };
+
+        const EMAILJS_PUBLIC_KEY = 'Kn6zCcEIVE789CQou';
+        const EMAILJS_SERVICE_ID = 'service_desu1hi';
+        const EMAILJS_TEMPLATE_ID = 'template_51sjsln';
+
+        let auth, db;
+        let generatedCode = null;
+        let userData = { email: '', password: '', nickname: '' };
+        let currentUser = null;
+        let countdownInterval = null;
+        let countdownSeconds = 60;
+        
+        let selectedAvatar = 'boy1';
+        let selectedAvatarUrl = 'https://files.catbox.moe/6zi1s7.jpg';
+        let selectedInterests = new Set();
+        
+        const availableInterests = ["Animation", "Motion Design", "Visual Effects", "3D Modeling", "Graphic Design", "Video Editing", "Cinematography", "Typography", "UI/UX Design", "Illustration"];
+
+        const showCustomModal = (title, message, showLoginButton = false) => {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').innerHTML = message;
+            const container = document.getElementById('modal-button-container');
+            
+            if (showLoginButton) {
+                container.innerHTML = `
+                    <button onclick="closeModalAndGoToLogin()" class="gradient-button px-6 py-2 text-white rounded-lg">Go to Login</button>
+                    <button onclick="closeModal()" class="bg-gray-600 px-6 py-2 text-white rounded-lg">Close</button>
+                `;
+            } else {
+                container.innerHTML = `<button onclick="closeModal()" class="gradient-button px-6 py-2 text-white rounded-lg">OK</button>`;
+            }
+            
+            document.getElementById('custom-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = () => document.getElementById('custom-modal').classList.add('hidden');
+        window.closeModalAndGoToLogin = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+            window.location.href = 'login.html';
+        };
+
+        const showMessage = (text, type = 'error') => {
+            const box = document.getElementById('message-box');
+            box.innerHTML = text;
+            box.className = 'p-4 mb-4 rounded-lg text-sm bg-opacity-30';
+            if (type === 'error') box.classList.add('bg-red-800', 'text-red-300', 'border-red-600');
+            else if (type === 'success') box.classList.add('bg-green-800', 'text-green-300', 'border-green-600');
+            else if (type === 'info') box.classList.add('bg-blue-800', 'text-blue-300', 'border-blue-600');
+            box.classList.remove('hidden');
+            setTimeout(() => box.classList.add('hidden'), 5000);
+        };
+
+        const showProfileMessage = (text, type = 'error') => {
+            const box = document.getElementById('profile-message-box');
+            box.textContent = text;
+            box.className = 'p-4 mb-4 rounded-lg text-sm';
+            if (type === 'error') box.classList.add('bg-red-900', 'text-red-300');
+            else if (type === 'success') box.classList.add('bg-green-900', 'text-green-300');
+            else if (type === 'info') box.classList.add('bg-blue-900', 'text-blue-300');
+            box.classList.remove('hidden');
+            setTimeout(() => box.classList.add('hidden'), 5000);
+        };
+
+        const setLoading = (buttonId, isLoading, loadingText = 'Processing...') => {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+            if (isLoading) {
+                btn.dataset.original = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${loadingText}`;
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+            } else {
+                btn.innerHTML = btn.dataset.original || 'Submit';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        };
+
+        const setView = (viewId) => {
+            const signupHeader = document.getElementById('signup-header');
+            const signupForm = document.getElementById('signup-form');
+            const verificationView = document.getElementById('verification-view');
+            const successView = document.getElementById('success-view');
+            
+            if (viewId === 'signup-view') {
+                document.getElementById('signup-view').classList.remove('hidden');
+                document.getElementById('profile-view').classList.add('hidden');
+                if (signupForm) signupForm.classList.remove('hidden');
+                if (verificationView) verificationView.classList.add('hidden');
+                if (successView) successView.classList.add('hidden');
+                if (signupHeader) signupHeader.style.display = 'block';
+            } else if (viewId === 'verification-view') {
+                if (signupForm) signupForm.classList.add('hidden');
+                if (verificationView) verificationView.classList.remove('hidden');
+                if (successView) successView.classList.add('hidden');
+                if (signupHeader) signupHeader.style.display = 'none'; // Hide the signup header
+            } else if (viewId === 'success-view') {
+                if (signupForm) signupForm.classList.add('hidden');
+                if (verificationView) verificationView.classList.add('hidden');
+                if (successView) successView.classList.remove('hidden');
+                if (signupHeader) signupHeader.style.display = 'none';
+            } else if (viewId === 'profile-view') {
+                document.getElementById('signup-view').classList.add('hidden');
+                document.getElementById('profile-view').classList.remove('hidden');
+                initializeProfileSetup();
+            }
+        };
+
+        window.goBackToSignUp = () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+            setView('signup-view');
+            document.getElementById('verification-code').value = '';
+        };
+
+        window.goToStep = (step) => {
+            if (step === 1) {
+                document.querySelectorAll('.step-container').forEach(container => container.classList.remove('active'));
+                document.getElementById('step-1').classList.add('active');
+                document.querySelectorAll('.step-dot').forEach((dot, index) => dot.classList.toggle('active', index === 0));
+            } else if (step === 2) {
+                document.querySelectorAll('.step-container').forEach(container => container.classList.remove('active'));
+                document.getElementById('step-2').classList.add('active');
+                document.querySelectorAll('.step-dot').forEach((dot, index) => dot.classList.toggle('active', index === 1));
+            } else if (step === 3) {
+                document.querySelectorAll('.step-container').forEach(container => container.classList.remove('active'));
+                document.getElementById('step-3').classList.add('active');
+                document.querySelectorAll('.step-dot').forEach((dot, index) => dot.classList.toggle('active', index === 2));
+            }
+        };
+
+        const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+        const startCountdown = () => {
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownSeconds = 60;
+            const timerSpan = document.getElementById('countdown-timer');
+            const countdownContainer = document.getElementById('countdown-container');
+            const resendBtn = document.getElementById('resend-button');
+            
+            if (countdownContainer) countdownContainer.classList.remove('fade-out');
+            if (timerSpan) timerSpan.textContent = '60';
+            if (resendBtn) {
+                resendBtn.disabled = true;
+                resendBtn.classList.add('resend-disabled');
+            }
+            
+            countdownInterval = setInterval(() => {
+                countdownSeconds--;
+                if (timerSpan) timerSpan.textContent = countdownSeconds;
+                
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    if (resendBtn) {
+                        resendBtn.disabled = false;
+                        resendBtn.classList.remove('resend-disabled');
+                    }
+                    if (countdownContainer) countdownContainer.classList.add('fade-out');
+                }
+            }, 1000);
+        };
+
+        window.selectAvatar = (avatarId, avatarUrl) => {
+            selectedAvatar = avatarId;
+            selectedAvatarUrl = avatarUrl;
+            document.querySelectorAll('.avatar-circle').forEach(img => img.classList.remove('selected'));
+            const selectedImg = document.querySelector(`[data-id="${avatarId}"]`);
+            if (selectedImg) selectedImg.classList.add('selected');
+            const preview = document.getElementById('avatar-preview');
+            if (preview) preview.src = avatarUrl;
+            updateEnterFlowButtonState();
+        };
+
+        const updateEnterFlowButtonState = () => {
+            const usernameInput = document.getElementById('profile-username');
+            const nickname = document.getElementById('profile-nickname')?.value.trim();
+            const enterFlowButton = document.getElementById('enter-flow-button');
+            const usernameValid = usernameInput ? usernameInput.classList.contains('username-valid') : false;
+            const nicknameValid = nickname && nickname.length > 0;
+            if (enterFlowButton) {
+                enterFlowButton.disabled = !(usernameValid && nicknameValid);
+            }
+        };
+
+        let usernameTimeout = null;
+        const checkUsernameAvailability = async (username) => {
+            if (!username || username.length < 3) return true;
+            try {
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("username", "==", username));
+                const querySnapshot = await getDocs(q);
+                return !querySnapshot.empty;
+            } catch (error) {
+                console.error("Error checking username:", error);
+                return false;
+            }
+        };
+
+        const validateUsername = async (username) => {
+            const usernameInput = document.getElementById('profile-username');
+            const statusIcon = document.getElementById('username-status-icon');
+            const statusText = document.getElementById('username-status-text');
+            const nextButton = document.getElementById('step-1-next');
+            
+            if (usernameTimeout) clearTimeout(usernameTimeout);
+            
+            if (!username) {
+                if (usernameInput) usernameInput.classList.remove('username-valid', 'username-invalid', 'username-checking');
+                if (statusIcon) statusIcon.className = 'fas fa-circle text-gray-500 mr-1 text-xs';
+                if (statusText) {
+                    statusText.textContent = 'Enter a username';
+                    statusText.className = 'text-xs text-gray-400';
+                }
+                if (nextButton) {
+                    nextButton.disabled = true;
+                    nextButton.classList.add('nav-button-disabled');
+                }
+                updateEnterFlowButtonState();
+                return;
+            }
+            
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                if (usernameInput) {
+                    usernameInput.classList.remove('username-checking', 'username-valid');
+                    usernameInput.classList.add('username-invalid');
+                }
+                if (statusIcon) statusIcon.className = 'fas fa-times-circle text-red-500 mr-1 text-xs';
+                if (statusText) {
+                    statusText.textContent = 'Only lowercase letters, numbers, and underscores allowed';
+                    statusText.className = 'text-xs text-red-500';
+                }
+                if (nextButton) nextButton.disabled = true;
+                updateEnterFlowButtonState();
+                return;
+            }
+            
+            if (username.length < 3) {
+                if (usernameInput) {
+                    usernameInput.classList.remove('username-checking', 'username-valid');
+                    usernameInput.classList.add('username-invalid');
+                }
+                if (statusIcon) statusIcon.className = 'fas fa-times-circle text-red-500 mr-1 text-xs';
+                if (statusText) {
+                    statusText.textContent = 'Username must be at least 3 characters';
+                    statusText.className = 'text-xs text-red-500';
+                }
+                if (nextButton) nextButton.disabled = true;
+                updateEnterFlowButtonState();
+                return;
+            }
+            
+            if (usernameInput) {
+                usernameInput.classList.remove('username-valid', 'username-invalid');
+                usernameInput.classList.add('username-checking');
+            }
+            if (statusIcon) statusIcon.className = 'fas fa-spinner fa-pulse text-yellow-500 mr-1 text-xs';
+            if (statusText) {
+                statusText.textContent = 'Checking availability...';
+                statusText.className = 'text-xs text-yellow-500';
+            }
+            if (nextButton) nextButton.disabled = true;
+            
+            usernameTimeout = setTimeout(async () => {
+                try {
+                    const usernameTaken = await checkUsernameAvailability(username);
+                    
+                    if (usernameTaken) {
+                        if (usernameInput) {
+                            usernameInput.classList.remove('username-checking');
+                            usernameInput.classList.add('username-invalid');
+                        }
+                        if (statusIcon) statusIcon.className = 'fas fa-times-circle text-red-500 mr-1 text-xs';
+                        if (statusText) {
+                            statusText.textContent = 'Username is already taken';
+                            statusText.className = 'text-xs text-red-500';
+                        }
+                        if (nextButton) nextButton.disabled = true;
+                    } else {
+                        if (usernameInput) {
+                            usernameInput.classList.remove('username-checking');
+                            usernameInput.classList.add('username-valid');
+                        }
+                        if (statusIcon) statusIcon.className = 'fas fa-check-circle text-green-500 mr-1 text-xs';
+                        if (statusText) {
+                            statusText.textContent = 'Username is available';
+                            statusText.className = 'text-xs text-green-500';
+                        }
+                        if (nextButton) {
+                            nextButton.disabled = false;
+                            nextButton.classList.remove('nav-button-disabled');
+                        }
+                    }
+                    updateEnterFlowButtonState();
+                } catch (error) {
+                    console.error("Username check error:", error);
+                    if (usernameInput) {
+                        usernameInput.classList.remove('username-checking');
+                        usernameInput.classList.add('username-invalid');
+                    }
+                    if (statusIcon) statusIcon.className = 'fas fa-exclamation-circle text-red-500 mr-1 text-xs';
+                    if (statusText) {
+                        statusText.textContent = 'Error checking username';
+                        statusText.className = 'text-xs text-red-500';
+                    }
+                    if (nextButton) nextButton.disabled = true;
+                    updateEnterFlowButtonState();
+                }
+            }, 500);
+        };
+
+        const setupBioCounter = () => {
+            const bioInput = document.getElementById('bio');
+            const counter = document.getElementById('bio-counter');
+            
+            if (bioInput) {
+                bioInput.addEventListener('input', () => {
+                    let text = bioInput.value;
+                    if (counter) counter.textContent = `${text.length}/100`;
+                    
+                    if (text.length > 100) {
+                        bioInput.value = text.substring(0, 100);
+                        if (counter) counter.textContent = '100/100';
+                    }
+                    
+                    if (text.match(/https?:\/\/[^\s]+|www\.[^\s]+|\.[a-z]{2,}\/[^\s]+/i)) {
+                        showProfileMessage("Links are not allowed in bio", 'error');
+                        bioInput.value = text.replace(/https?:\/\/[^\s]+|www\.[^\s]+|\.[a-z]{2,}\/[^\s]+/gi, '');
+                    }
+                });
+            }
+        };
+
+        window.handleSignUp = async () => {
+            const nickname = document.getElementById('nickname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm-password').value;
+
+            if (!nickname || !email || !password) {
+                showCustomModal('Error', 'Please fill in all fields.');
+                return;
+            }
+            if (password.length < 8) {
+                showCustomModal('Error', 'Password must be at least 8 characters.');
+                return;
+            }
+            if (password !== confirm) {
+                showCustomModal('Error', 'Passwords do not match.');
+                return;
+            }
+
+            setLoading('signup-button', true, 'Processing...');
+
+            try {
+                generatedCode = generateOTP();
+                userData = { email, password, nickname };
+
+                const emailParams = {
+                    user_name: userData.nickname,
+                    user_email: userData.email,
+                    user_password: userData.password,
+                    otp_code: generatedCode
+                };
+
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
+                const targetEmail = document.getElementById('target-email');
+                if (targetEmail) targetEmail.textContent = email;
+                
+                setView('verification-view');
+                startCountdown();
+                showMessage('Verification code sent!', 'success');
+            } catch (error) {
+                console.error("Email Error:", error);
+                showCustomModal('Error', 'Failed to send verification email. Please try again.');
+            } finally {
+                setLoading('signup-button', false);
+            }
+        };
+
+        window.handleVerify = async () => {
+            const code = document.getElementById('verification-code').value.trim();
+            
+            if (countdownSeconds <= 0) {
+                showCustomModal('Code Expired', 'Your verification code has expired. Please click "Resend Code" to get a new one.');
+                return;
+            }
+            
+            if (code !== generatedCode) {
+                showCustomModal('Invalid Code', 'The verification code you entered is incorrect. Please try again.');
+                return;
+            }
+
+            setLoading('verify-button', true, 'Creating account...');
+
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+                const user = userCred.user;
+                currentUser = user;
+                
+                const tempUsername = userData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '_') + Math.floor(Math.random() * 1000);
+                
+                const userDocRef = doc(db, 'users', user.uid);
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    nickname: userData.nickname,
+                    email: userData.email,
+                    username: tempUsername,
+                    profileCompleted: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    accountType: 'email',
+                    status: 'active'
+                });
+
+                const successView = document.getElementById('success-view');
+                if (successView) {
+                    successView.innerHTML = `
+                        <div class="text-center p-8 liquid-glass-card rounded-lg">
+                            <i class="fas fa-check-circle text-5xl text-cyan-400 mb-4"></i>
+                            <h2 class="text-2xl font-bold text-white mb-2">Success!</h2>
+                            <p class="text-gray-400 mb-6">Welcome, ${userData.nickname}. Your account is ready.</p>
+                            <button onclick="showProfileSetup()" class="gradient-button w-full text-white font-semibold py-3 rounded-lg shadow-md">
+                                Complete Profile
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                setView('success-view');
+                if (countdownInterval) clearInterval(countdownInterval);
+                
+            } catch (error) {
+                console.error("Registration Error:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                    showCustomModal('Email Already Registered', 'This email is already registered. Would you like to log in instead?', true);
+                } else if (error.code === 'auth/weak-password') {
+                    showCustomModal('Registration Error', 'Password is too weak. Please use a stronger password.');
+                } else if (error.code === 'auth/invalid-email') {
+                    showCustomModal('Registration Error', 'Invalid email address. Please check your email format.');
+                } else {
+                    showCustomModal('Registration Error', 'Registration failed. Please try again.');
+                }
+            } finally {
+                setLoading('verify-button', false);
+            }
+        };
+
+        window.handleResendCode = async () => {
+            if (countdownSeconds > 0) {
+                showProfileMessage(`Please wait ${countdownSeconds} seconds before requesting a new code`, 'info');
+                return;
+            }
+            
+            setLoading('resend-button', true, 'Sending...');
+            
+            try {
+                generatedCode = generateOTP();
+                const emailParams = {
+                    user_name: userData.nickname,
+                    user_email: userData.email,
+                    user_password: userData.password,
+                    otp_code: generatedCode
+                };
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
+                startCountdown();
+                showMessage('New verification code sent!', 'success');
+            } catch (error) {
+                console.error("Resend Error:", error);
+                showCustomModal('Error', 'Failed to resend code. Please try again.');
+            } finally {
+                setLoading('resend-button', false);
+            }
+        };
+
+        window.showProfileSetup = () => {
+            const nicknameInput = document.getElementById('profile-nickname');
+            if (nicknameInput && userData.nickname) {
+                nicknameInput.value = userData.nickname;
+            }
+            setView('profile-view');
+        };
+
+        const initializeProfileSetup = () => {
+            const firstAvatar = document.querySelector('[data-id="boy1"]');
+            if (firstAvatar) firstAvatar.classList.add('selected');
+            initializeInterests();
+            setupBioCounter();
+            
+            const nextBtn1 = document.getElementById('step-1-next');
+            const nextBtn2 = document.getElementById('step-2-next');
+            const addInterestBtn = document.getElementById('add-interest-btn');
+            const enterFlowBtn = document.getElementById('enter-flow-button');
+            const usernameInput = document.getElementById('profile-username');
+            const nicknameInput = document.getElementById('profile-nickname');
+            
+            if (nextBtn1) {
+                const newBtn1 = nextBtn1.cloneNode(true);
+                nextBtn1.parentNode.replaceChild(newBtn1, nextBtn1);
+                newBtn1.id = 'step-1-next';
+                newBtn1.addEventListener('click', () => goToStep(2));
+            }
+            
+            if (nextBtn2) {
+                const newBtn2 = nextBtn2.cloneNode(true);
+                nextBtn2.parentNode.replaceChild(newBtn2, nextBtn2);
+                newBtn2.id = 'step-2-next';
+                newBtn2.addEventListener('click', () => goToStep(3));
+            }
+            
+            if (addInterestBtn) {
+                const newAddBtn = addInterestBtn.cloneNode(true);
+                addInterestBtn.parentNode.replaceChild(newAddBtn, addInterestBtn);
+                newAddBtn.id = 'add-interest-btn';
+                newAddBtn.addEventListener('click', addCustomInterest);
+            }
+            
+            if (enterFlowBtn) {
+                const newEnterBtn = enterFlowBtn.cloneNode(true);
+                enterFlowBtn.parentNode.replaceChild(newEnterBtn, enterFlowBtn);
+                newEnterBtn.id = 'enter-flow-button';
+                newEnterBtn.addEventListener('click', handleProfileSubmit);
+            }
+            
+            if (usernameInput) {
+                usernameInput.addEventListener('input', (e) => validateUsername(e.target.value));
+            }
+            if (nicknameInput) {
+                nicknameInput.addEventListener('input', updateEnterFlowButtonState);
+            }
+        };
+
+        const initializeInterests = () => {
+            const container = document.getElementById('interests-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            availableInterests.forEach(interest => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'px-3 py-2 rounded-lg border border-gray-600 text-gray-300 text-sm';
+                button.textContent = interest;
+                button.addEventListener('click', () => toggleInterest(interest, button));
+                container.appendChild(button);
+            });
+        };
+
+        const toggleInterest = (interest, button) => {
+            if (selectedInterests.has(interest)) {
+                selectedInterests.delete(interest);
+                button.classList.remove('bg-cyan-500', 'border-cyan-500', 'text-gray-900');
+                button.classList.add('border-gray-600', 'text-gray-300');
+            } else {
+                if (selectedInterests.size >= 5) {
+                    showProfileMessage("You can select up to 5 interests", 'info');
+                    return;
+                }
+                selectedInterests.add(interest);
+                button.classList.add('bg-cyan-500', 'border-cyan-500', 'text-gray-900');
+                button.classList.remove('border-gray-600', 'text-gray-300');
+            }
+        };
+
+        const addCustomInterest = () => {
+            const input = document.getElementById('custom-interest');
+            if (!input) return;
+            const interest = input.value.trim();
+            
+            if (!interest) {
+                showProfileMessage("Please enter an interest", 'error');
+                return;
+            }
+            
+            if (interest.length > 20) {
+                showProfileMessage("Interest must be less than 20 characters", 'error');
+                return;
+            }
+            
+            if (selectedInterests.has(interest)) {
+                showProfileMessage("This interest is already selected", 'info');
+                return;
+            }
+            
+            if (selectedInterests.size >= 5) {
+                showProfileMessage("You can select up to 5 interests", 'info');
+                return;
+            }
+            
+            selectedInterests.add(interest);
+            const container = document.getElementById('interests-container');
+            if (container) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'px-3 py-2 rounded-lg bg-cyan-500 border border-cyan-500 text-gray-900 text-sm';
+                button.textContent = interest;
+                button.addEventListener('click', () => toggleInterest(interest, button));
+                container.appendChild(button);
+            }
+            input.value = '';
+            showProfileMessage(`Added "${interest}" to interests`, 'success');
+        };
+
+        const handleProfileSubmit = async () => {
+            if (!currentUser) {
+                showProfileMessage("Please sign in first", 'error');
+                return;
+            }
+
+            const username = document.getElementById('profile-username')?.value.trim();
+            const nickname = document.getElementById('profile-nickname')?.value.trim();
+            const fullName = document.getElementById('full-name')?.value.trim();
+            const location = document.getElementById('location')?.value.trim();
+            const bio = document.getElementById('bio')?.value.trim();
+            const instagram = document.getElementById('instagram')?.value.trim();
+            const youtube = document.getElementById('youtube')?.value.trim();
+            const tiktok = document.getElementById('tiktok')?.value.trim();
+
+            if (!username || !nickname) {
+                showProfileMessage("Username and nickname are required", 'error');
+                return;
+            }
+
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                showProfileMessage("Username can only contain lowercase letters, numbers, and underscores", 'error');
+                return;
+            }
+
+            const usernameInput = document.getElementById('profile-username');
+            if (!usernameInput.classList.contains('username-valid')) {
+                showProfileMessage("Please choose a valid username", 'error');
+                return;
+            }
+
+            const enterFlowButton = document.getElementById('enter-flow-button');
+            if (enterFlowButton) {
+                enterFlowButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+                enterFlowButton.disabled = true;
+            }
+
+            try {
+                const userDataUpdate = {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    nickname: nickname,
+                    username: username,
+                    fullName: fullName || null,
+                    location: location || null,
+                    bio: bio || null,
+                    profileImage: selectedAvatarUrl,
+                    interests: Array.from(selectedInterests),
+                    social: { instagram: instagram || null, youtube: youtube || null, tiktok: tiktok || null },
+                    profileCompleted: true,
+                    updatedAt: new Date().toISOString()
+                };
+
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userDocRef, userDataUpdate, { merge: true });
+
+                showProfileMessage("Profile setup complete! Redirecting...", 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'homepage.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                if (enterFlowButton) {
+                    enterFlowButton.innerHTML = 'ENTER THE FLOW';
+                    enterFlowButton.disabled = false;
+                }
+                showProfileMessage("Failed to save profile. Please try again.", 'error');
+            }
+        };
+
+        window.togglePasswordVisibility = (id) => {
+            const input = document.getElementById(id);
+            const icon = document.getElementById(`eye-${id}`);
+            if (input && icon) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            }
+        };
+
+        window.toggleBothPasswords = () => {
+            const showBoth = document.getElementById('show-both-passwords')?.checked;
+            const passInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirm-password');
+            if (passInput && confirmInput) {
+                const type = showBoth ? 'text' : 'password';
+                passInput.type = type;
+                confirmInput.type = type;
+            }
+        };
+
+        window.generateStrongPassword = () => {
+            const pass = Math.random().toString(36).slice(-10).toUpperCase() + "!" + Math.floor(Math.random()*100);
+            const passInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirm-password');
+            if (passInput) passInput.value = pass;
+            if (confirmInput) confirmInput.value = pass;
+            checkPasswordStrength(pass);
+        };
+
+        const checkPasswordStrength = (p) => {
+            const meter = document.getElementById('password-strength-meter');
+            const txt = document.getElementById('password-strength-text');
+            const hasUpper = /[A-Z]/.test(p);
+            const isLong = p.length >= 8;
+
+            if (meter && txt) {
+                if (p.length > 10 && hasUpper) { 
+                    meter.style.width = '100%'; 
+                    meter.className = 'h-full bg-green-500 rounded-full transition-all duration-300'; 
+                    txt.textContent = 'Strong'; 
+                    txt.className = 'text-xs text-green-400';
+                } else if (isLong) { 
+                    meter.style.width = '60%'; 
+                    meter.className = 'h-full bg-yellow-500 rounded-full transition-all duration-300'; 
+                    txt.textContent = 'Medium'; 
+                    txt.className = 'text-xs text-yellow-400';
+                } else { 
+                    meter.style.width = '20%'; 
+                    meter.className = 'h-full bg-red-500 rounded-full transition-all duration-300'; 
+                    txt.textContent = 'Weak'; 
+                    txt.className = 'text-xs text-red-400';
+                }
+            }
+        };
+
+        const initializeApplication = async () => {
+            try {
+                emailjs.init(EMAILJS_PUBLIC_KEY);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                const signupBtn = document.getElementById('signup-button');
+                if (signupBtn) signupBtn.disabled = false;
+            } catch (err) {
+                console.error("Initialization Failed:", err);
+            }
+        };
+
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+            passwordInput.addEventListener('input', (e) => checkPasswordStrength(e.target.value));
+        }
+        initializeApplication();
+    </script>
+</body>
+</html>

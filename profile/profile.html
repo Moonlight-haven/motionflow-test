@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Profile - Motion-Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-dark: #0a0a12;
+      --color-bg: #0f0f1a;
+      --color-bg-light: #1a1a2e;
+      --color-primary: #00bcd4;
+      --color-accent: #00bcd4;
+      --color-accent-alt: #f97316;
+      --color-text: #e2e8f0;
+      --color-text-muted: #94a3b8;
+      --font-heading: 'Orbitron', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --border: rgba(0, 188, 212, 0.2);
+      --radius-sm: 12px;
+      --radius-lg: 20px;
+      --transition: all 0.3s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-body); -webkit-tap-highlight-color: transparent; }
+
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+
+    body {
+      margin: 0; min-height: 100vh;
+      background: linear-gradient(135deg, var(--color-bg) 0%, #0a0b14 100%);
+      color: var(--color-text); overflow-x: hidden; position: relative;
+      display: flex; flex-direction: column; touch-action: pan-y; width: 100%; max-width: 100vw;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, rgba(0,188,212,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(249,115,22,0.05) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+
+    /* LOADING OVERLAY - Only covers middle content, navs stay visible */
+    .loading-overlay {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 130px);
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(0, 188, 212, 0.2);
+      border-radius: 50%;
+      border-top-color: var(--color-accent);
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      color: var(--color-text-muted);
+      font-size: 0.9em;
+      text-align: center;
+      max-width: 250px;
+    }
+
+    /* TOP NAVIGATION */
+    .top-nav {
+      height: 70px; background: rgba(10,10,18,0.9); backdrop-filter: blur(15px);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem;
+      border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.2); width: 100%; flex-shrink: 0;
+    }
+    .nav-left { display: flex; align-items: center; gap: 18px; }
+    .hamburger { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,188,212,0.1); border-radius: 12px; border: 1px solid var(--border); color: var(--color-primary); font-size: 1.1rem; cursor: pointer; transition: var(--transition); position: relative; z-index: 1000; }
+    .brand { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; cursor: pointer; }
+
+    /* SIDEBAR */
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; z-index: 150; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+    .sidebar-overlay.active { display: block; opacity: 1; pointer-events: auto; }
+    .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px); z-index: 200; transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow: 10px 0 40px rgba(0,0,0,0.5); border-right: 1px solid var(--border); padding: 2rem 1.5rem; overflow-y: auto; display: flex; flex-direction: column; pointer-events: auto; }
+    .sidebar.open { left: 0; }
+    .sidebar-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); text-align: center; }
+    .sidebar-brand { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-menu { list-style: none; flex: 1; }
+    .sidebar-menu li { padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 6px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: var(--transition); font-size: 0.9rem; color: var(--color-text); position: relative; z-index: 1; }
+    .sidebar-menu li a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 14px; width: 100%; position: relative; z-index: 2; }
+    .sidebar-menu li:hover { background: rgba(0,188,212,0.1); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 1.5rem 0; opacity: 0.3; }
+    .tools-dropdown-header { display: flex; align-items: center; justify-content: space-between; width: 100%; cursor: pointer; }
+    .coming-soon-badge { font-size: 0.6rem; background: var(--color-warning, #f59e0b); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; white-space: nowrap; margin-left: auto; }
+    .tools-dropdown-items { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding-left: 10px; }
+    .tools-dropdown-items.open { max-height: 300px; }
+    .tools-dropdown-items li { opacity: 0.5; pointer-events: none; padding: 10px 15px !important; font-size: 0.85rem !important; }
+    .logout-item { padding: 16px 20px; border-radius: var(--radius-sm); margin-top: auto; display: flex; align-items: center; gap: 18px; cursor: pointer; transition: var(--transition); font-size: 0.95rem; color: #ef4444; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); position: relative; z-index: 1; }
+    .logout-item:hover { background: rgba(239,68,68,0.15); color: #ff6b6b; transform: translateX(5px); border-color: rgba(239,68,68,0.4); }
+
+    /* LOGOUT DIALOG */
+    .logout-dialog { display: none; position: fixed; inset: 0; background: rgba(5,5,26,0.95); justify-content: center; align-items: center; z-index: 9999; padding: 20px; backdrop-filter: blur(10px); }
+    .logout-dialog.active { display: flex; }
+    .logout-content { background: rgba(15,17,30,0.95); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid rgba(0,188,212,0.2); box-shadow: 0 0 40px rgba(0,188,212,0.3); backdrop-filter: blur(10px); text-align: center; }
+    .logout-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+    .logout-confirm-btn, .logout-cancel-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; }
+    .logout-confirm-btn { background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; }
+    .logout-cancel-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(0,188,212,0.2); }
+
+    /* Main Content - hidden until loaded */
+    .main-content {
+      flex: 1; padding: 20px; position: relative; z-index: 1; width: 100%;
+      max-width: 1200px; margin: 0 auto; padding-top: 30px; padding-bottom: 100px;
+      overflow-x: hidden;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .main-content.loaded {
+      opacity: 1;
+    }
+    .profile-container { max-width: 1000px; margin: 0 auto; width: 100%; }
+    .profile-header-section { text-align: center; margin-bottom: 40px; }
+    .profile-header-section h1 {
+      font-family: var(--font-heading); font-size: clamp(2em,5vw,3em);
+      background: linear-gradient(135deg,var(--color-accent),var(--color-accent-alt));
+      -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 10px;
+    }
+    .profile-main { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 40px; }
+    @media (max-width: 768px) { .profile-main { grid-template-columns: 1fr; } }
+    .profile-card, .info-card {
+      background: var(--color-bg-light); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 20px; padding: 30px; box-shadow: 0 8px 32px rgba(0,188,212,0.1);
+      backdrop-filter: blur(10px); width: 100%; overflow-x: hidden; max-width: 100%;
+    }
+    .profile-avatar { width: 180px; height: 180px; border-radius: 50%; border: 3px solid var(--color-accent); background: linear-gradient(135deg,#0a0a2a,#1a1a3a); margin: 0 auto 25px; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 8px 24px rgba(0,188,212,0.3); }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; border-radius: 50%; }
+    .profile-avatar:hover .avatar-overlay { opacity: 1; }
+    .nickname { font-family: var(--font-heading); font-size: clamp(1.8em,5vw,2.2em); font-weight: 900; color: var(--color-accent); margin-bottom: 5px; text-align: center; text-shadow: 0 0 10px rgba(0,188,212,0.3); }
+    .username { color: var(--color-text-muted); font-size: 1.1em; margin-bottom: 20px; text-align: center; font-weight: 500; }
+    .profile-bio { color: var(--color-text-muted); font-size: 0.95em; line-height: 1.5; margin-bottom: 25px; text-align: center; }
+    .profile-stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 15px; margin: 20px 0; }
+    .stat-item { text-align: center; padding: 15px; background: rgba(0,188,212,0.05); border-radius: 12px; border: 1px solid rgba(0,188,212,0.1); cursor: pointer; transition: var(--transition); }
+    .stat-item:hover { background: rgba(0,188,212,0.1); transform: translateY(-2px); }
+    .stat-value { font-size: 1.4em; font-weight: 700; color: var(--color-accent); }
+    .stat-label { font-size: 0.85em; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .social-links { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .social-link { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; transition: var(--transition); border: 2px solid transparent; }
+    .social-link:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .social-link.tiktok { background: #000; } .social-link.youtube { background: #FF0000; } .social-link.instagram { background: linear-gradient(45deg,#405DE6,#5851DB,#833AB4,#C13584,#E1306C,#FD1D1D); }
+    .card-title { font-family: var(--font-heading); font-size: 1.3em; font-weight: 700; color: var(--color-accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .info-grid { display: grid; gap: 15px; }
+    .info-item { display: flex; align-items: center; padding: 15px; background: rgba(0,188,212,0.05); border-left: 3px solid var(--color-accent); border-radius: 10px; transition: var(--transition); }
+    .info-item:hover { background: rgba(0,188,212,0.1); border-left-color: var(--color-accent-alt); transform: translateX(5px); }
+    .info-label { color: var(--color-accent); font-weight: 600; min-width: 120px; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px; }
+    .info-value { color: var(--color-text); font-weight: 500; flex: 1; }
+    .edit-profile-btn { display: inline-block; background: transparent; color: var(--color-accent); border: 2px solid var(--color-accent); padding: 12px 24px; border-radius: 8px; font-family: var(--font-heading); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; margin-top: 15px; transition: var(--transition); }
+    .edit-profile-btn:hover { background: rgba(0,188,212,0.1); transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,188,212,0.2); }
+    .interests-container { display: flex; flex-wrap: wrap; gap: 8px; }
+    .interest-tag { background: rgba(0,188,212,0.1); color: var(--color-accent); padding: 6px 12px; border-radius: 20px; font-size: 0.85em; border: 1px solid rgba(0,188,212,0.2); }
+    .cooldown-badge { display: inline-block; background: rgba(249,115,22,0.2); color: var(--color-accent-alt); padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px; }
+    .privacy-badge { display: inline-block; padding: 4px 10px; border-radius: 15px; font-size: 0.8em; font-weight: 600; margin-left: 10px; }
+    .privacy-badge.public { background: rgba(0,188,212,0.2); color: var(--color-accent); border: 1px solid rgba(0,188,212,0.3); }
+    .privacy-badge.private { background: rgba(249,115,22,0.2); color: var(--color-accent-alt); border: 1px solid rgba(249,115,22,0.3); }
+    .privacy-badge.friends { background: rgba(124,58,237,0.2); color: #8b5cf6; border: 1px solid rgba(124,58,237,0.3); }
+    .edit-icon { margin-left: 10px; color: var(--color-accent); cursor: pointer; transition: var(--transition); }
+    .edit-icon:hover { color: var(--color-accent-alt); transform: scale(1.2); }
+
+    /* BOTTOM NAVIGATION */
+    .bottom-nav {
+      height: 60px; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,188,212,0.3); display: flex; justify-content: space-around;
+      align-items: center; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      box-shadow: 0 -2px 15px rgba(0,0,0,0.2); width: 100%;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--color-text-muted); font-size: 0.7rem; gap: 4px; text-decoration: none; padding: 8px; border-radius: 8px; position: relative; min-width: 60px; flex: 1; text-align: center; max-width: 25%; transition: var(--transition); }
+    .nav-item.active { color: var(--color-primary); }
+    .nav-item.active i { color: var(--color-primary); text-shadow: 0 0 8px rgba(0,188,212,0.8); }
+    .nav-item i { font-size: 1.3rem; transition: var(--transition); }
+    .icon-container { position: relative; display: inline-block; }
+    .notification-dot { position: absolute; top: -4px; right: -6px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--color-bg); display: none; z-index: 10; box-shadow: 0 0 8px rgba(239,68,68,0.6); animation: pulse 2s infinite; }
+    .notification-dot.active { display: block !important; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.3); } }
+
+    @media (max-width: 768px) {
+      .top-nav { height: 65px; padding: 0 1rem; }
+      .brand { font-size: 1.1rem; }
+      .main-content { padding: 20px 15px 100px; }
+      .profile-avatar { width: 140px; height: 140px; }
+      .loading-overlay { top: 65px; height: calc(100vh - 120px); }
+    }
+    @media (max-width: 480px) {
+      .top-nav { height: 60px; padding: 0 0.8rem; }
+      .brand { font-size: 1rem; }
+      .main-content { padding: 15px 10px 90px; }
+      .bottom-nav { height: 55px; }
+      .nav-item { padding: 6px; font-size: 0.65rem; }
+      .nav-item i { font-size: 1.2rem; }
+      .info-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+      .info-label { min-width: auto; }
+      .loading-overlay { top: 60px; height: calc(100vh - 115px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation - ALWAYS VISIBLE -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="hamburger" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></div>
+      <a href="../homepage.html" class="brand">MOTION-FLOW</a>
+    </div>
+  </nav>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header"><span class="sidebar-brand">MOTION FLOW</span></div>
+    <ul class="sidebar-menu">
+      <li><a href="../homepage.html"><i class="fa-solid fa-home"></i> Home</a></li>
+      <li><a href="../apk/apk.html"><i class="fa-solid fa-download"></i> APK Share</a></li>
+      <li><a href="../Users/users.html"><i class="fa-solid fa-users"></i> Users</a></li>
+      <li><a href="../Chats/chats.html"><i class="fa-solid fa-comments"></i> Messages</a></li>
+      <li><a href="../tutorial.html"><i class="fa-solid fa-graduation-cap"></i> Tutorials</a></li>
+      <li><a href="../Settings/settings.html"><i class="fa-solid fa-cog"></i> Settings</a></li>
+      <li onclick="toggleToolsDropdown(event)"><div class="tools-dropdown-header"><i class="fa-solid fa-toolbox"></i> Tools <span class="coming-soon-badge">Coming Soon</span></div></li>
+      <div class="tools-dropdown-items" id="toolsDropdownItems"><ul class="sidebar-menu" style="margin:0;padding:0;"><li><i class="fa-solid fa-arrow-down"></i> Down-graders</li><li><i class="fa-solid fa-file-lines"></i> Templates</li><li><i class="fa-solid fa-plus-circle"></i> CC Adder</li><li><i class="fa-solid fa-water"></i> Watermarks</li></ul></div>
+    </ul>
+    <div class="sidebar-divider"></div>
+    <div class="logout-item" id="logoutSidebarBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+  </div>
+
+  <!-- LOADING OVERLAY - Only covers middle content area -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading your profile...</div>
+  </div>
+
+  <!-- Main Content - Hidden until fully loaded -->
+  <div class="main-content" id="mainContent">
+    <div class="profile-container">
+      <div class="profile-header-section">
+        <h1>My Profile</h1>
+        <p style="color:var(--color-text-muted);">View and manage your profile information</p>
+      </div>
+
+      <div class="profile-main">
+        <!-- Left Column - Profile Card -->
+        <div class="profile-card">
+          <div class="profile-avatar-section" style="text-align:center;">
+            <div class="profile-avatar" id="profile-avatar" onclick="window.location.href='edit-profile.html'">
+              <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-accent);">
+                <i class="fas fa-user" style="font-size:4em;"></i>
+              </div>
+              <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+            </div>
+            <div class="nickname" id="nickname">Loading...</div>
+            <div class="username" id="username">@username</div>
+            <div class="profile-bio" id="profile-bio">No bio yet.</div>
+            
+            <div class="social-links" id="social-links"></div>
+            
+            <div class="profile-stats">
+              <div class="stat-item"><div class="stat-value" id="followers-count">0</div><div class="stat-label">Followers</div></div>
+              <div class="stat-item"><div class="stat-value" id="following-count">0</div><div class="stat-label">Following</div></div>
+            </div>
+            
+            <a href="edit-profile.html" class="edit-profile-btn"><i class="fas fa-edit"></i> Edit Profile</a>
+          </div>
+        </div>
+
+        <!-- Right Column - Profile Details -->
+        <div>
+          <div class="info-card" style="margin-bottom:20px;">
+            <div class="card-title"><i class="fas fa-globe"></i> Public Information</div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">Display Name:</span><span class="info-value" id="public-nickname">Nickname</span></div>
+              <div class="info-item"><span class="info-label">Username:</span><span class="info-value" id="public-username">@username</span></div>
+              <div class="info-item"><span class="info-label">Interests:</span><div class="interests-container" id="public-interests"></div></div>
+            </div>
+          </div>
+
+          <div class="info-card" style="margin-bottom:20px;">
+            <div class="card-title"><i class="fas fa-lock"></i> Private Information <span class="cooldown-badge" id="nicknameCooldown" style="display:none;"></span></div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">Email:</span><span class="info-value" id="private-email">Loading...</span></div>
+              <div class="info-item"><span class="info-label">Full Name:</span><span class="info-value" id="private-fullname">Loading...</span></div>
+              <div class="info-item"><span class="info-label">Location:</span><span class="info-value" id="private-location">Not specified</span></div>
+              <div class="info-item"><span class="info-label">Display Name:</span><span class="info-value" id="private-nickname">Nickname</span><span class="cooldown-badge" id="nicknameCooldown2" style="display:none;"></span><i class="fas fa-edit edit-icon" onclick="window.location.href='edit-profile.html'"></i></div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="card-title"><i class="fas fa-shield-alt"></i> Privacy Settings</div>
+            <div class="info-grid">
+              <div class="info-item"><span class="info-label">Profile Visibility:</span><span class="info-value"><span id="privacy-visibility">Public</span><span class="privacy-badge public" id="privacyBadge">Public</span></span><i class="fas fa-edit edit-icon" onclick="window.location.href='edit-profile.html'"></i></div>
+              <div class="info-item"><span class="info-label">Email Visible:</span><span class="info-value" id="privacy-email-visible">No</span><i class="fas fa-edit edit-icon" onclick="window.location.href='edit-profile.html'"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bottom Navigation - ALWAYS VISIBLE -->
+  <nav class="bottom-nav">
+    <a href="../homepage.html" class="nav-item" id="homeNavItem"><div class="icon-container"><i class="fa-solid fa-house"></i><span id="homeDot" class="notification-dot"></span></div><span>Home</span></a>
+    <a href="../updates/updates.html" class="nav-item" id="updatesNavItem" onclick="markUpdatesSeen()"><div class="icon-container"><i class="fa-solid fa-bell"></i><span id="updatesDot" class="notification-dot"></span></div><span>Updates</span></a>
+    <a href="../Live_Chat/live.html" class="nav-item" id="chatNavItem" onclick="markChatSeen()"><div class="icon-container"><i class="fa-solid fa-comments"></i><span id="chatDot" class="notification-dot"></span></div><span>Live Chat</span></a>
+    <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+  </nav>
+
+  <!-- Logout Dialog -->
+  <div class="logout-dialog" id="logoutDialog">
+    <div class="logout-content">
+      <h2>Logout Confirmation</h2>
+      <p>Are you sure you want to logout?</p>
+      <div class="logout-buttons">
+        <button class="logout-confirm-btn" id="logoutConfirm">Yes, Logout</button>
+        <button class="logout-cancel-btn" id="logoutCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, getDoc, doc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { onAuthStateChanged, getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
+      authDomain: "motion-flow-47450.firebaseapp.com",
+      databaseURL: "https://motion-flow-47450-default-rtdb.firebaseio.com",
+      projectId: "motion-flow-47450",
+      storageBucket: "motion-flow-47450.firebasestorage.app",
+      messagingSenderId: "686875529848",
+      appId: "1:686875529848:web:48edf5164aaaf938cdd38d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const realtimeDb = getDatabase(app);
+    const $ = id => document.getElementById(id);
+    const APP_ID = 'motion-flow-47450';
+
+    let currentUserId = null, currentUserData = null, sidebarOpen = false;
+
+    // Tracks if all data has loaded
+    let profileDataLoaded = false;
+    let followStatsLoaded = false;
+    let notificationsSetup = false;
+
+    function checkAllLoaded() {
+      if (profileDataLoaded && followStatsLoaded && notificationsSetup) {
+        hideLoading();
+      }
+    }
+
+    function hideLoading() {
+      const overlay = $('loadingOverlay');
+      const content = $('mainContent');
+      
+      // Fade out loading overlay
+      overlay.classList.add('hidden');
+      
+      // Show main content with fade in
+      setTimeout(() => {
+        content.classList.add('loaded');
+      }, 100);
+    }
+
+    // Sidebar toggle
+    function toggleSidebar() {
+      sidebarOpen = !sidebarOpen;
+      $('sidebar').classList.toggle('open', sidebarOpen);
+      $('sidebarOverlay').classList.toggle('active', sidebarOpen);
+    }
+
+    // Tools dropdown
+    window.toggleToolsDropdown = function(e) { e.stopPropagation(); $('toolsDropdownItems').classList.toggle('open'); };
+    document.addEventListener('click', function(e) {
+      const items = $('toolsDropdownItems');
+      if (items && items.classList.contains('open') && !e.target.closest('.tools-dropdown-header') && !e.target.closest('#toolsDropdownItems')) items.classList.remove('open');
+    });
+
+    // Logout
+    function showLogoutDialog() { $('logoutDialog').classList.add('active'); }
+    window.showLogoutDialog = showLogoutDialog;
+    $('logoutConfirm').onclick = async () => {
+      try {
+        await signOut(auth);
+        window.location.href = '../index.html';
+      } catch (e) { alert('Logout failed'); }
+    };
+    $('logoutCancel').onclick = () => $('logoutDialog').classList.remove('active');
+
+    // Calculate cooldown
+    function getRemainingDays(lastChangeDate, cooldownDays) {
+      if (!lastChangeDate) return 0;
+      const diff = Math.floor((Date.now() - new Date(lastChangeDate).getTime()) / (1000 * 60 * 60 * 24));
+      return Math.max(cooldownDays - diff, 0);
+    }
+
+    // Load follow stats
+    async function loadFollowStats(userId) {
+      try {
+        const followersSnap = await getDocs(query(collection(db, "followers"), where("followingId", "==", userId)));
+        $('followers-count').textContent = followersSnap.size;
+        
+        const followingSnap = await getDocs(query(collection(db, "followers"), where("followerId", "==", userId)));
+        $('following-count').textContent = followingSnap.size;
+        
+        followStatsLoaded = true;
+        checkAllLoaded();
+      } catch (e) {
+        console.error('Follow stats error:', e);
+        followStatsLoaded = true;
+        checkAllLoaded();
+      }
+    }
+
+    // Update UI with all profile data
+    function updateUserUI(userData) {
+      currentUserData = userData;
+      
+      const nick = userData.nickname || userData.displayName || userData.username || 'User';
+      $('nickname').textContent = nick;
+      $('public-nickname').textContent = nick;
+      $('private-nickname').textContent = nick;
+      
+      const uname = userData.username || (userData.email ? userData.email.split('@')[0] : 'username');
+      $('username').textContent = '@' + uname;
+      $('public-username').textContent = '@' + uname;
+      
+      $('profile-bio').textContent = userData.bio || 'No bio yet.';
+      $('private-fullname').textContent = userData.fullName || userData.name || 'Not specified';
+      $('private-email').textContent = userData.email || 'No email';
+      $('private-location').textContent = userData.location || 'Not specified';
+      
+      // Avatar
+      const pic = userData.profileImage || userData.profilePicture || userData.photoURL;
+      if (pic) {
+        $('profile-avatar').innerHTML = `<img src="${pic}" alt="Profile" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-accent);\\'><i class=\\'fas fa-user\\' style=\\'font-size:4em;\\'></i></div><div class=\\'avatar-overlay\\'><i class=\\'fas fa-camera\\'></i></div>';"><div class="avatar-overlay"><i class="fas fa-camera"></i></div>`;
+      }
+      
+      // Interests
+      const interests = userData.interests || [];
+      $('public-interests').innerHTML = interests.length ? interests.map(i => `<span class="interest-tag">${i}</span>`).join('') : '<span style="color:var(--color-text-muted);">No interests</span>';
+      
+      // Social links
+      const sl = $('social-links');
+      sl.innerHTML = '';
+      if (userData.social) {
+        if (userData.social.tiktok) sl.innerHTML += `<a href="https://tiktok.com/@${userData.social.tiktok}" target="_blank" class="social-link tiktok"><i class="fab fa-tiktok"></i></a>`;
+        if (userData.social.youtube) sl.innerHTML += `<a href="${userData.social.youtube}" target="_blank" class="social-link youtube"><i class="fab fa-youtube"></i></a>`;
+        if (userData.social.instagram) sl.innerHTML += `<a href="https://instagram.com/${userData.social.instagram}" target="_blank" class="social-link instagram"><i class="fab fa-instagram"></i></a>`;
+      }
+      if (!sl.innerHTML) sl.innerHTML = '<span style="color:var(--color-text-muted);">No social links</span>';
+      
+      // Privacy
+      const vis = (userData.privacy && userData.privacy.profileVisibility) || 'public';
+      $('privacy-visibility').textContent = vis.charAt(0).toUpperCase() + vis.slice(1);
+      $('privacyBadge').textContent = vis.charAt(0).toUpperCase() + vis.slice(1);
+      $('privacyBadge').className = 'privacy-badge ' + vis;
+      $('privacy-email-visible').textContent = (userData.privacy && userData.privacy.showEmail) ? 'Yes' : 'No';
+      
+      // Cooldown
+      if (userData.lastChanged) {
+        const rem = getRemainingDays(userData.lastChanged.nickname, 10);
+        if (rem > 0) {
+          const msg = rem === 1 ? `Can change in ${rem} day` : `Can change in ${rem} days`;
+          $('nicknameCooldown').textContent = msg;
+          $('nicknameCooldown').style.display = 'inline-block';
+          $('nicknameCooldown2').textContent = msg;
+          $('nicknameCooldown2').style.display = 'inline-block';
+        }
+      }
+      
+      profileDataLoaded = true;
+      checkAllLoaded();
+    }
+
+    // Load profile from Firestore
+    async function loadUserProfile(userId) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.profileCompleted === false) {
+            window.location.href = 'profile-setup.html';
+            return;
+          }
+          updateUserUI(data);
+          // Load follow stats after profile data
+          loadFollowStats(userId);
+        } else {
+          window.location.href = 'profile-setup.html';
+        }
+      } catch (e) {
+        console.error('Error loading profile:', e);
+        $('nickname').textContent = 'Error Loading Profile';
+        $('username').textContent = '@error';
+        $('profile-bio').textContent = 'Unable to load profile. Please try again.';
+        profileDataLoaded = true;
+        followStatsLoaded = true;
+        checkAllLoaded();
+      }
+    }
+
+    // NOTIFICATIONS
+    function listenForProductUpdates() {
+      localStorage.setItem('homeLastSeen', Date.now());
+      $('homeDot')?.classList.remove('active');
+      onValue(ref(realtimeDb, 'tools'), () => {
+        localStorage.setItem('homeLastSeen', Date.now());
+        $('homeDot')?.classList.remove('active');
+      });
+    }
+
+    function listenForUpdatesNotifications() {
+      onValue(ref(realtimeDb, 'updates'), (snap) => {
+        if (!snap.exists()) return;
+        const vs = Object.values(snap.val());
+        if (vs.length) {
+          const latest = vs.reduce((a, b) => (a.createdAt > b.createdAt ? a : b));
+          const ls = parseInt(localStorage.getItem('lastVisitUpdates') || '0');
+          if ($('updatesDot')) $('updatesDot').classList.toggle('active', latest.createdAt > ls);
+        }
+        // Mark notifications as setup
+        if (!notificationsSetup) {
+          notificationsSetup = true;
+          checkAllLoaded();
+        }
+      });
+    }
+
+    function listenForChatNotifications() {
+      const chatPath = `artifacts/${APP_ID}/public/data/liveChat/messages`;
+      onValue(ref(realtimeDb, chatPath), (snap) => {
+        if (!snap.exists()) return;
+        const ms = Object.values(snap.val());
+        if (!ms.length) return;
+        let lt = 0;
+        ms.forEach(m => { const mt = m.timestamp || m.createdAt || m.time || 0; if (mt > lt) lt = mt; });
+        const ls = parseInt(localStorage.getItem('chatLastSeen') || '0');
+        if ($('chatDot') && lt > ls) $('chatDot').classList.add('active');
+        if ($('homeDot') && lt > ls) $('homeDot').classList.add('active');
+        // Mark notifications as setup
+        if (!notificationsSetup) {
+          notificationsSetup = true;
+          checkAllLoaded();
+        }
+      });
+    }
+
+    function initAllNotifications() {
+      listenForProductUpdates();
+      listenForUpdatesNotifications();
+      listenForChatNotifications();
+      // Set a fallback timer in case Firebase listeners don't trigger
+      setTimeout(() => {
+        if (!notificationsSetup) {
+          notificationsSetup = true;
+          checkAllLoaded();
+        }
+      }, 2000);
+    }
+
+    window.markUpdatesSeen = function() {
+      localStorage.setItem('lastVisitUpdates', Date.now());
+      $('updatesDot')?.classList.remove('active');
+    };
+
+    window.markChatSeen = function() {
+      localStorage.setItem('chatLastSeen', Date.now());
+      $('chatDot')?.classList.remove('active');
+      $('homeDot')?.classList.remove('active');
+    };
+
+    // Auth listener
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUserId = user.uid;
+        await loadUserProfile(currentUserId);
+        initAllNotifications();
+      } else {
+        window.location.href = '../index.html';
+      }
+    });
+
+    // Event listeners
+    $('hamburgerBtn').onclick = toggleSidebar;
+    $('sidebarOverlay').onclick = toggleSidebar;
+    $('logoutSidebarBtn').onclick = showLogoutDialog;
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (sidebarOpen) toggleSidebar();
+        if ($('logoutDialog').classList.contains('active')) $('logoutDialog').classList.remove('active');
+      }
+    });
+
+    window.toggleSidebar = toggleSidebar;
+  </script>
+</body>
+</html>

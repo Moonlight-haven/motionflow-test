@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Motion-Flow | Motion Graphics Community</title>
+    <meta name="description" content="Join motion designers from around the world. Connect with After Effects masters and elevate your craft.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-dark: #0a0a12;
+            --color-bg: #0f0f1a;
+            --color-bg-light: #1a1a2e;
+            --color-primary: #00bcd4;
+            --color-secondary: #7c3aed;
+            --color-accent: #00bcd4;
+            --color-accent-alt: #f97316;
+            --color-text: #e2e8f0;
+            --color-text-muted: #94a3b8;
+            --color-text-dark: #475569;
+            --glow-blue: rgba(0, 188, 212, 0.6);
+            --glow-purple: rgba(124, 58, 237, 0.6);
+            --glow-orange: rgba(249, 115, 22, 0.6);
+            --font-heading: 'Orbitron', 'Segoe UI', system-ui, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 2rem;
+            --space-lg: 3rem;
+            --space-xl: 4rem;
+            --transition-fast: 150ms ease;
+            --transition-normal: 300ms ease;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 188, 212, 0.04) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Floating buttons */
+        .action-buttons {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2rem;
+            pointer-events: none;
+        }
+        .action-buttons .btn-left, .action-buttons .btn-right { pointer-events: auto; }
+        .btn-signup-float, .btn-login-float {
+            padding: 0.6rem 1.6rem;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: inline-block;
+            border: 1.5px solid var(--color-accent);
+        }
+        .btn-signup-float {
+            background: var(--color-accent);
+            color: var(--color-dark);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .btn-signup-float:hover { background: #00e5ff; transform: translateY(-2px); box-shadow: 0 0 18px rgba(0, 188, 212, 0.6); }
+        .btn-login-float {
+            background: rgba(10, 10, 18, 0.85);
+            backdrop-filter: blur(8px);
+            color: var(--color-accent);
+        }
+        .btn-login-float:hover { background: rgba(0, 188, 212, 0.2); transform: translateY(-2px); box-shadow: 0 0 12px rgba(0, 188, 212, 0.4); }
+
+        /* Typography */
+        h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
+        h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); margin-bottom: var(--space-md); background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
+        h2 { font-size: clamp(1.8rem, 5vw, 3.5rem); margin-bottom: var(--space-lg); text-align: center; }
+        h3 { font-size: 1.5rem; margin-bottom: var(--space-sm); }
+        p { font-size: 1.125rem; margin-bottom: var(--space-sm); color: var(--color-text-muted); }
+        .text-gradient { background: linear-gradient(135deg, var(--color-accent), var(--color-accent-alt)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 var(--space-md); }
+        section { padding: var(--space-xl) 0; position: relative; }
+
+        .hero-tagline {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            margin-bottom: var(--space-lg);
+            color: var(--color-text-muted);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .video-wrapper { position: relative; width: 100%; padding-top: 56.25%; border-radius: 16px; overflow: hidden; transition: transform var(--transition-normal), box-shadow var(--transition-normal); margin: 0 auto; background: #000; }
+        .video-wrapper.hero-video { max-width: 800px; margin-top: var(--space-lg); box-shadow: 0 0 15px rgba(0, 188, 212, 0.3); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .video-wrapper.hero-video:hover { transform: scale(1.01); box-shadow: 0 0 25px rgba(0, 188, 212, 0.5); }
+        .video-wrapper .video-preview-media { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
+        .video-caption { max-width: 800px; margin: 0 auto; text-align: center; font-family: var(--font-heading); font-size: 0.75rem; color: var(--color-text-muted); letter-spacing: 2px; text-transform: uppercase; background-color: var(--color-bg-light); padding: 0.75rem var(--space-sm); border-top: 2px solid var(--color-accent); border-radius: 0 0 16px 16px; }
+
+        .hero { min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 30%, rgba(0, 188, 212, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%); animation: slowPulse 25s ease-in-out infinite alternate; z-index: -1; }
+        @keyframes slowPulse { 0% { transform: rotate(0deg) scale(1); opacity: 0.6; } 100% { transform: rotate(180deg) scale(1.1); opacity: 1; } }
+        .hero-content { position: relative; z-index: 2; text-align: center; max-width: 900px; margin: 0 auto; }
+
+        .features { background-color: var(--color-dark); position: relative; }
+        .features::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--color-accent), var(--color-accent-alt), transparent); }
+        .section-subtitle { text-align: center; font-size: 1.2rem; color: var(--color-text-muted); max-width: 650px; margin: 0 auto var(--space-xl); }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl); }
+        .feature-card { background-color: var(--color-bg-light); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: var(--space-lg); transition: all var(--transition-normal); position: relative; overflow: hidden; --card-glow-color: var(--glow-blue); }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.07), transparent 50%); opacity: 0; transition: opacity var(--transition-normal); pointer-events: none; }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 20px var(--card-glow-color), 0 15px 35px rgba(0, 0, 0, 0.6); }
+        .feature-card:nth-child(1) { --card-glow-color: var(--glow-blue); }
+        .feature-card:nth-child(2) { --card-glow-color: var(--glow-orange); }
+        .feature-card:nth-child(3) { --card-glow-color: var(--glow-purple); }
+        .card-icon { font-size: 2.8rem; margin-bottom: var(--space-md); display: inline-block; background: linear-gradient(135deg, var(--color-accent), var(--color-accent-alt)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+        .btn-group { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-top: var(--space-lg); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.9rem 2.2rem; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; background: transparent; color: var(--color-accent); border: 2px solid var(--color-accent); border-radius: 60px; cursor: pointer; transition: all var(--transition-normal); text-decoration: none; }
+        .btn:hover { background-color: rgba(0, 188, 212, 0.08); transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 188, 212, 0.2); }
+        .btn-primary { background-color: var(--color-accent); color: var(--color-dark); border-color: var(--color-accent); box-shadow: 0 6px 14px rgba(0, 188, 212, 0.3); }
+        .btn-primary:hover { background-color: var(--color-accent); transform: translateY(-3px); box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.4), 0 12px 28px rgba(0, 188, 212, 0.15); }
+
+        .footer { background-color: var(--color-dark); padding: var(--space-md) 0; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .footer-content { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); }
+        .footer-links { display: flex; gap: var(--space-lg); flex-wrap: wrap; }
+        .footer-link { color: var(--color-text-muted); text-decoration: none; font-size: 0.9rem; transition: color var(--transition-fast); }
+        .footer-link:hover { color: var(--color-accent); }
+        .copyright { color: var(--color-text-dark); font-size: 0.85rem; }
+
+        .scroll-fade { opacity: 0; transform: translateY(20px); transition: opacity 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.7s ease; }
+        .scroll-fade.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .action-buttons { padding: 0 1rem; top: 15px; }
+            .btn-signup-float, .btn-login-float { padding: 0.4rem 1.2rem; font-size: 0.75rem; }
+            .btn-group { flex-direction: column; align-items: stretch; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="action-buttons">
+        <div class="btn-left">
+            <a href="sign-up.html" class="btn-signup-float">Sign Up</a>
+        </div>
+        <div class="btn-right">
+            <a href="login.html" class="btn-login-float">Log In</a>
+        </div>
+    </div>
+
+    <main>
+        <section class="hero" id="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>MOTION <span class="text-gradient">FLOW</span></h1>
+                    
+                    <!-- Clean tagline without number -->
+                    <div class="hero-tagline scroll-fade">
+                        Where motion meets creativity. Join and become a creator.<br>
+                        Connect with <span class="text-gradient">After Effects and Alight Motion Editors</span> and 
+                        <span class="text-gradient">visionary creators</span> shaping the future of editing.
+                    </div>
+                    
+                    <div class="btn-group">
+                        <a href="sign-up.html" class="btn btn-primary" id="heroJoinBtn">Join Us Now →</a>
+                        <a href="#features" class="btn" id="learnMoreBtn">Explore Features</a>
+                    </div>
+                    
+                    <div class="video-wrapper hero-video scroll-fade">
+                        <video class="video-preview-media" controls autoplay loop muted playsinline>
+                            <source src="lib/previewvid.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="video-caption scroll-fade">⚡MOTION FLOW PREVIEW⚡</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="container">
+                <h2 class="scroll-fade">Forge Your <span class="text-gradient">Flow</span>. Meet Other Great<span class="text-gradient"> Editors</span>.</h2>
+                <p class="section-subtitle scroll-fade">Access exclusive tools, connect with industry legends, and transform your Edits.</p>
+                <div class="features-grid">
+                    <div class="feature-card scroll-fade">
+                        <div class="card-icon">⚡</div>
+                        <h3>Talk to Big Editors</h3>
+                        <p>Connect directly with legendary After Effects editors. Get personalized feedback and exclusive tutorials from the masters who shape visual trends.</p>
+                    </div>
+                    <div class="feature-card scroll-fade">
+                        <div class="card-icon">🎨</div>
+                        <h3>Master Motion Design</h3>
+                        <p>Access premium resources, custom effects, and project files shared exclusively within the Motion-Flow community. Transform from amateur to pro.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta" id="cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="scroll-fade">Ready to Transform Your <span class="text-gradient">Edits</span>?</h2>
+                    <p class="scroll-fade">Your journey to becoming a master editor begins here. Join a community of creators who've elevated their craft with Motion-Flow.</p>
+                    <a href="sign-up.html" class="btn btn-primary scroll-fade" id="ctaJoinBtn">Join Us Now</a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-links">
+                        <a href="privacy.html" class="footer-link">Privacy Policy</a>
+                        <a href="terms.html" class="footer-link">Terms of Service</a>
+                    </div>
+                    <p class="copyright">© 2025 Motion-Flow. All rights reserved. Crafted for creators.</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scroll for Learn More button
+        const learnBtn = document.getElementById('learnMoreBtn');
+        if (learnBtn) {
+            learnBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('features').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        }
+
+        // Mouse tracking for glow cards
+        const cards = document.querySelectorAll('.feature-card');
+        let ticking = false;
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        card.style.setProperty('--mouse-x', `${x}px`);
+                        card.style.setProperty('--mouse-y', `${y}px`);
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        });
+
+        // Intersection Observer for scroll animations
+        const fadeElements = document.querySelectorAll('.scroll-fade');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+        
+        fadeElements.forEach(el => observer.observe(el));
+
+        // Video fallback handler
+        const video = document.querySelector('.video-preview-media');
+        if (video) {
+            video.addEventListener('error', () => {
+                const wrapper = video.closest('.video-wrapper');
+                if (wrapper && !wrapper.querySelector('.fallback-msg')) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'fallback-msg';
+                    fallback.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#0f0f1a; color:#00bcd4; font-family:var(--font-heading); text-align:center; padding:1rem;';
+                    fallback.innerHTML = '🎬 Preview reel unavailable.<br>Join our community to access exclusive motion assets.';
+                    wrapper.appendChild(fallback);
+                    video.style.display = 'none';
+                }
+            });
+        }
+
+        console.log('Motion-Flow | Clean version | Join and become a creator');
+    </script>
+</body>
+</html>

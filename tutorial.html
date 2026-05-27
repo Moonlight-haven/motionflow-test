@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tutorials - Motion-Flow</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-dark: #0a0a12; --color-bg: #0f0f1a; --color-bg-light: #1a1a2e;
+      --color-primary: #00bcd4; --color-accent: #00bcd4; --color-accent-alt: #f97316;
+      --color-success: #10b981; --color-warning: #f59e0b; --color-error: #ef4444;
+      --color-text: #e2e8f0; --color-text-muted: #94a3b8;
+      --font-heading: 'Orbitron', sans-serif; --font-body: 'Inter', sans-serif;
+      --bg-card: #1a1a2e; --bg-input: #0f111a; --border: rgba(0, 188, 212, 0.2);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.3); --radius-sm: 12px; --radius-lg: 20px;
+      --transition: all 0.3s ease;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-body); -webkit-tap-highlight-color: transparent; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    html::-webkit-scrollbar { display: none; }
+    body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, var(--color-bg) 0%, #0a0b14 100%); color: var(--color-text); overflow-x: hidden; position: relative; display: flex; flex-direction: column; touch-action: pan-y; width: 100%; max-width: 100vw; scrollbar-width: none; -ms-overflow-style: none; }
+    body::-webkit-scrollbar { display: none; }
+    body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, rgba(0,188,212,0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(249,115,22,0.05) 0%, transparent 50%); pointer-events: none; z-index: 0; }
+    .sidebar, .admin-modal-content, .admin-products-list, .search-suggestions, .comments-list { scrollbar-width: none; -ms-overflow-style: none; }
+    .sidebar::-webkit-scrollbar, .admin-modal-content::-webkit-scrollbar, .admin-products-list::-webkit-scrollbar, .search-suggestions::-webkit-scrollbar, .comments-list::-webkit-scrollbar { display: none; }
+
+    .top-banner { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: linear-gradient(135deg,var(--color-primary),#0891b2); color: #fff; padding: 15px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 5000; transition: top 0.5s cubic-bezier(0.175,0.885,0.32,1.275); display: flex; align-items: center; cursor: pointer; }
+    .top-banner.active { top: 20px; }
+    .banner-content { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .banner-content i { font-size: 1.5rem; }
+    .banner-content span { flex: 1; font-weight: 500; }
+
+    .top-nav { height: 70px; background: rgba(10,10,18,0.9); backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: space-between; padding: 0 1.2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 15px rgba(0,0,0,0.2); width: 100%; }
+    .nav-left { display: flex; align-items: center; gap: 18px; }
+    .hamburger { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,188,212,0.1); border-radius: 12px; border: 1px solid var(--border); color: var(--color-primary); font-size: 1.1rem; cursor: pointer; transition: var(--transition); }
+    .brand { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; cursor: pointer; }
+
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; z-index: 150; opacity: 0; transition: opacity 0.3s; }
+    .sidebar-overlay.active { display: block; opacity: 1; }
+    .sidebar { position: fixed; left: -320px; top: 0; width: 300px; height: 100%; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px); z-index: 200; transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow: 10px 0 40px rgba(0,0,0,0.5); border-right: 1px solid var(--border); padding: 2rem 1.5rem; overflow-y: auto; display: flex; flex-direction: column; }
+    .sidebar.open { left: 0; }
+    .sidebar-header { margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); text-align: center; }
+    .sidebar-brand { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sidebar-menu { list-style: none; flex: 1; }
+    .sidebar-menu li { padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 6px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: var(--transition); font-size: 0.9rem; color: var(--color-text); border: 1px solid transparent; }
+    .sidebar-menu li a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 14px; width: 100%; }
+    .sidebar-menu li:hover { background: rgba(0,188,212,0.1); }
+    .sidebar-menu li.active { background: rgba(0,188,212,0.15); color: var(--color-primary); border: 1px solid rgba(0,188,212,0.5); box-shadow: 0 0 20px rgba(0,188,212,0.2), inset 0 0 10px rgba(0,188,212,0.05); }
+    .sidebar-menu li.active i { color: var(--color-primary); text-shadow: 0 0 12px rgba(0,188,212,0.6); }
+    .sidebar-divider { height: 1px; background: var(--border); margin: 1.5rem 0; opacity: 0.3; }
+    .tools-dropdown-header { display: flex; align-items: center; justify-content: space-between; width: 100%; cursor: pointer; }
+    .coming-soon-badge { font-size: 0.6rem; background: var(--color-warning); color: #000; padding: 2px 8px; border-radius: 10px; font-weight: 700; white-space: nowrap; margin-left: auto; }
+    .tools-dropdown-items { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding-left: 10px; }
+    .tools-dropdown-items.open { max-height: 300px; }
+    .tools-dropdown-items li { opacity: 0.5; pointer-events: none; padding: 10px 15px; font-size: 0.85rem; }
+    .logout-item { padding: 16px 20px; border-radius: var(--radius-sm); margin-top: auto; display: flex; align-items: center; gap: 18px; cursor: pointer; transition: var(--transition); font-size: 0.95rem; color: #ef4444; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); }
+    .logout-item:hover { background: rgba(239,68,68,0.15); color: #ff6b6b; transform: translateX(5px); border-color: rgba(239,68,68,0.4); }
+
+    .confirm-dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 5001; }
+    .confirm-dialog-overlay.active { display: flex; }
+    .confirm-dialog { background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 420px; width: 90%; border: 2px solid var(--color-primary); box-shadow: 0 10px 40px rgba(0,188,212,0.3); text-align: center; animation: modalSlideIn 0.3s ease; }
+    .confirm-dialog.danger { border-color: var(--color-error); }
+    .confirm-dialog-icon { font-size: 3rem; margin-bottom: 15px; }
+    .confirm-dialog-title { color: var(--color-text); font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+    .confirm-dialog-text { color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 20px; }
+    .confirm-dialog-input { width: 100%; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--color-text); font-size: 0.95rem; margin-bottom: 20px; display: none; resize: vertical; min-height: 80px; font-family: var(--font-body); }
+    .confirm-dialog-input:focus { outline: none; border-color: var(--color-primary); }
+    .confirm-dialog-buttons { display: flex; gap: 12px; justify-content: center; }
+    .confirm-dialog-yes, .confirm-dialog-no { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; transition: var(--transition); }
+    .confirm-dialog-yes { background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; }
+    .confirm-dialog-yes.save-btn { background: linear-gradient(135deg,var(--color-success),#059669); }
+    .confirm-dialog-no { background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid var(--border); }
+
+    .delete-confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 5001; }
+    .delete-confirm-overlay.active { display: flex; }
+    .delete-confirm-dialog { background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 420px; width: 90%; border: 2px solid var(--color-error); box-shadow: 0 10px 40px rgba(239,68,68,0.3); text-align: center; animation: modalSlideIn 0.3s ease; }
+    .delete-confirm-icon { font-size: 3rem; color: var(--color-error); margin-bottom: 15px; }
+    .delete-confirm-title { color: var(--color-error); font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+    .delete-confirm-text { color: var(--color-text); font-size: 0.95rem; margin-bottom: 25px; opacity: 0.9; }
+    .delete-confirm-product { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 10px; margin: 15px 0; color: var(--color-error); font-weight: 600; word-break: break-all; }
+    .delete-confirm-buttons { display: flex; gap: 12px; justify-content: center; }
+    .delete-confirm-yes { padding: 12px 24px; background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); min-width: 100px; position: relative; }
+    .delete-confirm-yes:hover { transform: scale(1.02); }
+    .delete-confirm-yes.loading { color: transparent !important; pointer-events: none; }
+    .delete-confirm-yes.loading::after { content: ''; position: absolute; width: 18px; height: 18px; top: 50%; left: 50%; margin: -9px 0 0 -9px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    .delete-confirm-no { padding: 12px 24px; background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); min-width: 100px; }
+
+    .logout-dialog { display: none; position: fixed; inset: 0; background: rgba(5,5,26,0.95); justify-content: center; align-items: center; z-index: 9999; padding: 20px; backdrop-filter: blur(10px); }
+    .logout-dialog.active { display: flex; }
+    .logout-content { background: rgba(15,17,30,0.95); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; border: 1px solid rgba(0,188,212,0.2); box-shadow: 0 0 40px rgba(0,188,212,0.3); backdrop-filter: blur(10px); text-align: center; }
+    .logout-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+    .logout-confirm-btn, .logout-cancel-btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; min-width: 100px; }
+    .logout-confirm-btn { background: linear-gradient(135deg,#ff4757,#ff3742); color: #fff; }
+    .logout-cancel-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(0,188,212,0.2); }
+
+    .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 20px; overflow-y: auto; }
+    .admin-modal-overlay.active { display: flex; }
+    .admin-modal-content { background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; border: 2px solid var(--color-primary); box-shadow: 0 10px 40px rgba(0,188,212,0.3); animation: modalSlideIn 0.3s ease; }
+    .back-to-home-btn { position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; border-radius: 50px; padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: var(--transition); font-size: 0.9rem; font-weight: 600; z-index: 3001; box-shadow: 0 4px 15px rgba(0,188,212,0.3); }
+    @keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .admin-form-group { margin-bottom: 20px; }
+    .admin-form-label { display: block; color: var(--color-text); font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+    .admin-form-input, .admin-form-select { width: 100%; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--color-text); font-size: 0.95rem; transition: var(--transition); }
+    .admin-form-input:focus, .admin-form-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0,188,212,0.2); }
+    .admin-form-textarea { min-height: 100px; resize: vertical; }
+    .admin-form-buttons { display: flex; gap: 15px; margin-top: 30px; }
+    .admin-form-submit { flex: 1; background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; padding: 14px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+    .admin-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .admin-form-submit.loading-btn { pointer-events: none; }
+    .admin-form-submit.loading-btn::after { content: ''; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%; margin: -10px 0 0 -10px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+    .admin-form-cancel { flex: 1; background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid var(--border); padding: 14px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: var(--transition); }
+
+    .admin-products-section { margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+    .admin-products-section h3 { color: var(--color-primary); margin-bottom: 20px; text-align: center; font-size: 1.5rem; }
+    .admin-products-list { max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); padding: 15px; }
+    .admin-product-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: var(--radius-sm); margin-bottom: 10px; }
+    .admin-product-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .admin-product-edit, .admin-product-delete, .admin-product-comments { padding: 6px 12px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+    .admin-product-edit { background: rgba(0,188,212,0.2); color: var(--color-primary); border: 1px solid var(--color-primary); }
+    .admin-product-delete { background: rgba(239,68,68,0.2); color: var(--color-error); border: 1px solid var(--color-error); }
+    .admin-product-comments { background: rgba(16,185,129,0.2); color: var(--color-success); border: 1px solid var(--color-success); }
+
+    .upload-status { display: none; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: var(--radius-sm); margin: 20px 0; font-weight: 600; }
+    .upload-status.success { display: flex; background: rgba(16,185,129,0.1); color: var(--color-success); border: 1px solid var(--color-success); }
+    .upload-status.error { display: flex; background: rgba(239,68,68,0.1); color: var(--color-error); border: 1px solid var(--color-error); }
+    .upload-status.loading { display: flex; background: rgba(0,188,212,0.1); color: var(--color-primary); border: 1px solid var(--color-primary); }
+
+    .success-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--color-bg-light); border-radius: var(--radius-lg); padding: 30px; max-width: 400px; width: 90%; border: 2px solid var(--color-success); box-shadow: 0 10px 40px rgba(16,185,129,0.3); z-index: 5000; display: none; flex-direction: column; align-items: center; text-align: center; }
+    .success-popup.active { display: flex; }
+
+    .video-player-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 7000; padding: 20px; }
+    .video-player-modal.active { display: flex; }
+    .video-player-content { position: relative; max-width: 90%; max-height: 90%; width: 100%; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 2px solid var(--color-primary); }
+    .video-player-close { position: absolute; top: -40px; right: 0; background: rgba(0,0,0,0.8); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
+    .video-player-element { width: 100%; max-height: 80vh; display: block; background: #000; }
+
+    .main-content { flex: 1; padding: 20px; position: relative; z-index: 1; width: 100%; max-width: 1400px; margin: 0 auto; padding-top: 90px; padding-bottom: 100px; box-sizing: border-box; }
+    .tutorials-header { text-align: center; margin-bottom: 30px; }
+    .tutorials-header h1 { font-family: var(--font-heading); font-size: clamp(1.8em,5vw,2.8em); background: linear-gradient(135deg,var(--color-accent),var(--color-accent-alt)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 10px; letter-spacing: 2px; }
+    .tutorials-header p { color: var(--color-text-muted); font-size: 1rem; }
+
+    .search-container { background: var(--color-bg-light); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px 25px; box-shadow: 0 8px 32px rgba(0,188,212,0.1); backdrop-filter: blur(10px); margin-bottom: 30px; width: 100%; box-sizing: border-box; position: relative; z-index: 1000; }
+    .search-box { display: flex; gap: 10px; position: relative; width: 100%; }
+    .search-input-wrapper { flex: 1; position: relative; z-index: 1001; min-width: 0; }
+    .search-input { width: 100%; padding: 14px 40px 14px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--color-text); font-size: 1em; }
+    .search-input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(0,188,212,0.2); }
+    .clear-search-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; font-size: 1rem; padding: 5px; display: none; z-index: 1002; }
+    .clear-search-btn.visible { display: block; }
+    .search-btn { background: linear-gradient(135deg,var(--color-accent),var(--color-accent-alt)); color: #fff; border: none; padding: 14px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .search-suggestions { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: var(--color-bg-light); border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; z-index: 9999; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.6); backdrop-filter: blur(10px); width: 100%; }
+    .search-suggestions.active { display: block; }
+    .suggestion-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--color-text); display: flex; align-items: center; gap: 10px; }
+    .suggestion-item:hover { background: rgba(0,188,212,0.15); }
+
+    .tutorials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px 20px; width: 100%; }
+    @media (max-width: 768px) { .tutorials-grid { grid-template-columns: 1fr; gap: 20px; } .search-box { flex-direction: column; } .search-btn { width: 100%; } }
+
+    .tutorial-card { background: var(--color-bg-light); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; break-inside: avoid; width: 100%; }
+    .thumb-wrapper { aspect-ratio: 16 / 9; background: #0a0a12; position: relative; overflow: hidden; width: 100%; cursor: pointer; }
+    .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-wrapper .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); }
+    .play-overlay i { font-size: 3.5rem; color: #fff; }
+    .duration-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.85); color: #fff; padding: 4px 8px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; z-index: 2; }
+
+    .tutorial-info { padding: 16px 16px 20px 16px; flex: 1; display: flex; flex-direction: column; }
+    .video-meta-row { display: grid; grid-template-columns: 36px 1fr; gap: 12px; margin-bottom: 8px; align-items: flex-start; }
+    .channel-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--color-bg-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+    .channel-avatar i { color: var(--color-primary); font-size: 1.2rem; }
+    .video-details { min-width: 0; }
+    .video-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 14px; font-weight: 600; color: #e2e8f0; line-height: 20px; margin-bottom: 4px; word-break: break-word; }
+    .video-meta-sub { font-size: 12px; color: #94a3b8; line-height: 18px; }
+
+    .description-wrapper { position: relative; margin-bottom: 12px; }
+    .tutorial-description { color: var(--color-text-muted); font-size: 0.85em; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; overflow: hidden; transition: max-height 0.3s ease; }
+    .tutorial-description a { color: var(--color-primary); text-decoration: none; }
+    .tutorial-description.truncated { max-height: 1.5em; }
+    .tutorial-description.expanded { max-height: none; }
+    .see-more-btn, .see-less-btn { background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 0.8em; font-weight: 600; padding: 2px 0; margin-top: 2px; display: none; }
+    .description-wrapper.truncated .see-more-btn { display: inline-block; }
+    .description-wrapper.expanded .see-less-btn { display: inline-block; }
+    .description-wrapper.expanded .see-more-btn { display: none; }
+
+    .user-info { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 10px; flex-wrap: wrap; gap: 8px; }
+    .username { font-size: 0.9em; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+    .admin-badge { background: linear-gradient(135deg,var(--color-warning),#d97706); color: #fff; font-size: 0.65em; padding: 2px 8px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; text-transform: uppercase; white-space: nowrap; }
+    .time { font-size: 0.85em; color: var(--color-text-muted); white-space: nowrap; }
+
+    .tutorial-meta-row { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; padding: 8px 12px; background: rgba(0,0,0,0.15); border-radius: 8px; font-size: 0.8rem; color: var(--color-text-muted); }
+    .view-count-badge { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--color-text-muted); }
+
+    .tutorial-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 15px; }
+    .like-btn, .share-btn, .comment-btn { padding: 12px 8px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.8em; transition: all 0.15s ease; }
+    .like-btn { background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid rgba(255,255,255,0.2); }
+    .like-btn.liked { background: rgba(239,68,68,0.15); color: var(--color-error); border-color: rgba(239,68,68,0.3); }
+    .like-btn:active { transform: scale(0.95); }
+    .share-btn { background: linear-gradient(135deg,var(--color-success),#059669); color: #fff; }
+    .share-btn:active { transform: scale(0.95); }
+    .comment-btn { background: rgba(255,255,255,0.1); color: var(--color-text); border: 1px solid rgba(255,255,255,0.2); }
+
+    .comments-section { display: none; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; }
+    .comments-section.active { display: block; }
+    .comments-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .comments-header span { font-size: 0.85rem; font-weight: 600; color: var(--color-primary); }
+    .close-comments-btn { background: rgba(255,255,255,0.1); border: none; color: var(--color-text-muted); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: var(--transition); }
+    .close-comments-btn:hover { background: rgba(239,68,68,0.2); color: var(--color-error); }
+    .comments-list { max-height: 300px; overflow-y: auto; margin-bottom: 15px; padding-right: 10px; }
+    .comment-item { padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.03); position: relative; }
+    .comment-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; cursor: pointer; }
+    .comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-primary); flex-shrink: 0; }
+    .comment-author { font-weight: 600; font-size: 0.85em; color: var(--color-primary); }
+    .comment-time { font-size: 0.7em; color: var(--color-text-muted); margin-left: auto; white-space: nowrap; }
+    .comment-text { font-size: 0.85em; line-height: 1.5; color: var(--color-text); white-space: pre-wrap; word-wrap: break-word; padding-right: 70px; }
+    .comment-actions-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+    .comment-like-btn, .comment-reply-btn, .comment-edit-btn, .comment-delete-btn { background: rgba(0,0,0,0.3); border: none; color: var(--color-text-muted); cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; transition: all 0.15s ease; }
+    .comment-like-btn.liked { color: var(--color-error); }
+    .comment-like-btn:active { transform: scale(0.95); }
+    .comment-edit-btn { color: var(--color-primary); }
+    .comment-delete-btn { color: var(--color-error); }
+    .replies-container { margin-left: 20px; border-left: 2px solid rgba(0,188,212,0.2); padding-left: 12px; margin-top: 8px; display: none; }
+    .replies-container.active { display: block; }
+    .toggle-replies-btn { background: none; border: none; color: var(--color-primary); cursor: pointer; font-size: 0.75em; font-weight: 600; padding: 4px 0; }
+
+    .reply-input-row { display: flex; gap: 6px; margin-top: 8px; margin-left: 20px; }
+    .reply-input-row .comment-input { flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--color-text); font-size: 0.8em; resize: none; min-height: 36px; max-height: 80px; font-family: var(--font-body); }
+    .reply-input-row .comment-submit { padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; }
+
+    .add-comment { display: flex; gap: 8px; margin-top: 15px; }
+    .comment-input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--color-text); font-size: 0.9em; resize: none; min-height: 40px; max-height: 100px; font-family: var(--font-body); }
+    .comment-submit { background: linear-gradient(135deg,var(--color-primary),var(--color-accent-alt)); color: #fff; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+
+    .loading-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 100px 20px; min-height: 400px; grid-column: 1 / -1; }
+    .loading-spinner { width: 60px; height: 60px; border: 4px solid rgba(0,188,212,0.1); border-radius: 50%; border-top-color: var(--color-accent); animation: spin 1s linear infinite; margin-bottom: 20px; }
+    .empty-state { text-align: center; padding: 80px 20px; color: var(--color-text-muted); grid-column: 1 / -1; }
+    .empty-icon { font-size: 4em; color: rgba(0,188,212,0.3); margin-bottom: 20px; }
+
+    .bottom-nav { height: 60px; background: rgba(10,10,18,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(0,188,212,0.3); display: flex; justify-content: space-around; align-items: center; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 -2px 15px rgba(0,0,0,0.2); width: 100%; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--color-text-muted); font-size: 0.7rem; gap: 4px; text-decoration: none; padding: 8px; border-radius: 8px; position: relative; min-width: 60px; flex: 1; text-align: center; max-width: 25%; transition: var(--transition); }
+    .nav-item.active { color: var(--color-primary); }
+    .nav-item i { font-size: 1.3rem; }
+    .icon-container { position: relative; display: inline-block; }
+    .notification-dot { position: absolute; top: -4px; right: -6px; width: 10px; height: 10px; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--color-bg); display: none; z-index: 10; box-shadow: 0 0 8px rgba(239,68,68,0.6); animation: pulse 2s infinite; }
+    .notification-dot.active { display: block !important; }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(15,17,30,0.95); color: #fff; padding: 15px 25px; border-radius: 10px; border: 1px solid rgba(0,188,212,0.3); backdrop-filter: blur(10px); box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 2001; display: none; align-items: center; gap: 10px; max-width: 90%; }
+    .toast.show { display: flex; }
+
+    @media (max-width: 768px) { .top-nav { height: 65px; padding: 0 1rem; } .brand { font-size: 1.1rem; } .main-content { padding: 70px 15px 100px; } }
+    @media (max-width: 480px) { .top-nav { height: 60px; padding: 0 0.8rem; } .brand { font-size: 1rem; } .main-content { padding: 65px 10px 90px; } }
+  </style>
+</head>
+<body>
+
+<div class="top-banner" id="topNotification"><div class="banner-content"><i class="fa-solid fa-circle-info"></i><span id="bannerMessage">New notification!</span></div></div>
+<div class="success-popup" id="successPopup"><div class="success-icon"><i class="fas fa-check-circle"></i></div><h2 class="success-message">Tutorial Added!</h2><button class="admin-form-submit" onclick="closeSuccessPopup()"><i class="fas fa-check"></i> OK</button></div>
+<div class="delete-confirm-overlay" id="deleteConfirmOverlay"><div class="delete-confirm-dialog"><div class="delete-confirm-icon"><i class="fas fa-exclamation-triangle"></i></div><h3 class="delete-confirm-title">Delete Tutorial?</h3><p class="delete-confirm-text">This action cannot be undone.</p><div class="delete-confirm-product" id="deleteConfirmProductName"></div><div class="delete-confirm-buttons"><button class="delete-confirm-no" id="deleteConfirmNo">Cancel</button><button class="delete-confirm-yes" id="deleteConfirmYes"><span class="btn-text"><i class="fas fa-trash"></i> Delete</span><span class="btn-spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Deleting...</span></button></div></div></div>
+<div class="confirm-dialog-overlay" id="confirmDialogOverlay"><div class="confirm-dialog" id="confirmDialog"><div class="confirm-dialog-icon" id="confirmDialogIcon"></div><div class="confirm-dialog-title" id="confirmDialogTitle"></div><p class="confirm-dialog-text" id="confirmDialogText"></p><textarea class="confirm-dialog-input" id="confirmDialogInput" placeholder="Edit your comment..."></textarea><div class="confirm-dialog-buttons"><button class="confirm-dialog-no" id="confirmDialogNo">Cancel</button><button class="confirm-dialog-yes" id="confirmDialogYes">Confirm</button></div></div></div>
+<div class="video-player-modal" id="videoPlayerModal"><div class="video-player-content"><button class="video-player-close" onclick="closeVideoPlayer()"><i class="fas fa-times"></i></button><video class="video-player-element" id="videoPlayerElement" controls preload="metadata"></video></div></div>
+
+<nav class="top-nav"><div class="nav-left"><div class="hamburger" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></div><a href="#" class="brand" id="brandLogo">MOTION-FLOW</a></div></nav>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar" id="sidebar"><div class="sidebar-header"><span class="sidebar-brand">MOTION FLOW</span></div><ul class="sidebar-menu"><li><a href="../homepage.html"><i class="fa-solid fa-home"></i> Home</a></li><li><a href="../apk/apk.html"><i class="fa-solid fa-download"></i> APK Share</a></li><li><a href="../Users/users.html"><i class="fa-solid fa-users"></i> Users</a></li><li><a href="../Chats/chats.html"><i class="fa-solid fa-comments"></i> Messages</a></li><li class="active"><a href="tutorials.html"><i class="fa-solid fa-graduation-cap"></i> Tutorials</a></li><li><a href="../Settings/settings.html"><i class="fa-solid fa-cog"></i> Settings</a></li><li onclick="toggleToolsDropdown(event)"><div class="tools-dropdown-header"><i class="fa-solid fa-toolbox"></i> Tools <span class="coming-soon-badge">Coming Soon</span></div></li><div class="tools-dropdown-items" id="toolsDropdownItems"><ul class="sidebar-menu" style="margin:0;padding:0;"><li><i class="fa-solid fa-arrow-down"></i> Down-graders</li><li><i class="fa-solid fa-file-lines"></i> Templates</li><li><i class="fa-solid fa-plus-circle"></i> CC Adder</li><li><i class="fa-solid fa-water"></i> Watermarks</li></ul></div></ul><div class="sidebar-divider"></div><div class="logout-item" id="logoutSidebarBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div>
+
+<div class="admin-modal-overlay" id="adminTutorialModal"><button class="back-to-home-btn" onclick="closeTutorialModal()"><i class="fa-solid fa-arrow-left"></i> Back</button><div class="admin-modal-content"><h2 style="margin-bottom:20px;color:var(--color-primary);text-align:center;" id="tutorialModalTitle"><i class="fa-solid fa-plus"></i> Add Tutorial</h2><div class="upload-status" id="uploadStatus"><i class="fas fa-spinner fa-spin"></i><span id="uploadStatusText">Uploading...</span></div><form id="tutorialUploadForm" onsubmit="return false;"><input type="hidden" id="editingTutorialId" value=""><div class="admin-form-group"><label class="admin-form-label">Tutorial Title *</label><input type="text" id="tutorialTitle" class="admin-form-input" placeholder="Enter tutorial title" required></div><div class="admin-form-group"><label class="admin-form-label">Description</label><textarea id="tutorialDescription" class="admin-form-input admin-form-textarea" placeholder="Describe the tutorial..."></textarea></div><div class="admin-form-group"><label class="admin-form-label">Video URL *</label><input type="url" id="tutorialVideoUrl" class="admin-form-input" placeholder="https://files.catbox.moe/example.mp4" required></div><div class="admin-form-group"><label class="admin-form-label">Thumbnail Image *</label><input type="file" id="tutorialThumbnailFile" accept="image/*" style="display:block;width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--color-text);"></div><div class="admin-form-group"><label class="admin-form-label">Duration *</label><input type="text" id="tutorialDuration" class="admin-form-input" placeholder="12:45" required></div><div class="admin-form-group"><label class="admin-form-label">Admin Name *</label><input type="text" id="tutorialAdminName" class="admin-form-input" placeholder="Motion-Flow" required></div><div class="admin-form-buttons"><button type="submit" class="admin-form-submit" id="tutorialSubmitBtn">Upload Tutorial</button><button type="button" class="admin-form-cancel" onclick="closeTutorialModal()">Cancel</button></div></form><div class="admin-products-section" id="adminTutorialsSection" style="display:none;"><h3>Manage Tutorials</h3><div class="admin-products-list" id="adminTutorialsList"><div style="text-align:center;color:var(--color-text-muted);padding:20px;">Loading...</div></div></div></div></div>
+
+<div class="admin-modal-overlay" id="commentManagementModal"><div class="admin-modal-content"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid var(--border);"><h3 style="color:var(--color-primary);font-family:var(--font-heading);"><i class="fas fa-comments"></i> Manage Comments</h3><button class="admin-form-cancel" onclick="closeCommentManagement()" style="padding:8px 15px;"><i class="fas fa-times"></i> Close</button></div><div class="comments-list" id="adminCommentsList" style="max-height:60vh;"></div></div></div>
+
+<div class="main-content" id="mainContent"><div class="tutorials-header"><h1>Tutorials</h1><p>Learn tips, tricks, and techniques from Motion-Flow experts</p></div><div class="search-container"><div class="search-box"><div class="search-input-wrapper"><input type="text" class="search-input" id="searchInput" placeholder="Search tutorials by title..." autocomplete="off"><button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()"><i class="fas fa-times"></i></button><div class="search-suggestions" id="searchSuggestions"></div></div><button class="search-btn" id="searchBtn"><i class="fas fa-search"></i> Search</button></div></div><div class="tutorials-grid" id="tutorialsGrid"><div class="loading-container"><div class="loading-spinner"></div><div style="color:var(--color-text-muted);">Loading tutorials...</div></div></div></div>
+
+<nav class="bottom-nav"><a href="../homepage.html" class="nav-item" id="homeNavItem"><div class="icon-container"><i class="fa-solid fa-house"></i><span id="homeDot" class="notification-dot"></span></div><span>Home</span></a><a href="../updates/updates.html" class="nav-item" id="updatesNavItem" onclick="markUpdatesSeen()"><div class="icon-container"><i class="fa-solid fa-bell"></i><span id="updatesDot" class="notification-dot"></span></div><span>Updates</span></a><a href="../Live_Chat/live.html" class="nav-item" id="chatNavItem" onclick="markChatSeen()"><div class="icon-container"><i class="fa-solid fa-comments"></i><span id="chatDot" class="notification-dot"></span></div><span>Live Chat</span></a><a href="../profile/profile.html" class="nav-item"><i class="fa-solid fa-user"></i><span>Profile</span></a></nav>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle" id="toastIcon"></i><span id="toastMessage">Copied!</span></div>
+<div class="logout-dialog" id="logoutDialog"><div class="logout-content"><h2>Logout Confirmation</h2><p>Are you sure you want to logout?</p><div class="logout-buttons"><button class="logout-confirm-btn" id="logoutConfirm">Yes, Logout</button><button class="logout-cancel-btn" id="logoutCancel">Cancel</button></div></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { ref, set, getDatabase, push, onValue, get, remove, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+import { onAuthStateChanged, getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {apiKey:"AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",authDomain:"motion-flow-47450.firebasestorage.app",databaseURL:"https://motion-flow-47450-default-rtdb.firebaseio.com",projectId:"motion-flow-47450",storageBucket:"motion-flow-47450.firebasestorage.app",messagingSenderId:"686875529848",appId:"1:686875529848:web:48edf5164aaaf938cdd38d"};
+const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getDatabase(); const firestore = getFirestore(app); const APP_ID = 'motion-flow-47450';
+const $ = id => document.getElementById(id);
+const ADMIN_EMAIL = "motionflow.admins@gmail.com", ADMIN_PASSWORD = "MOTION-FLOW-ADMIN";
+let currentUserId = null, currentUserData = null, sidebarOpen = false, isAdmin = false, adminClickCount = 0, adminClickTimer = null;
+let allTutorials = [], currentEditId = null, currentSearchQuery = '', searchDebounceTimer = null;
+let viewedTutorialsInSession = JSON.parse(sessionStorage.getItem('mf_viewed_tutorials') || '[]');
+let pendingDeleteId = null, pendingDeleteName = null, currentManagingTutorialId = null;
+
+const escapeHtml = s => !s ? '' : String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]);
+const escapeOnclick = s => !s ? '' : String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+const getTimeAgo = ts => { if(!ts) return ''; const d=Date.now()-ts,s=Math.floor(d/1000),m=Math.floor(s/60),h=Math.floor(m/60),dd=Math.floor(h/24); if(dd>0)return`${dd}d ago`;if(h>0)return`${h}h ago`;if(m>0)return`${m}m ago`;return'Just now'; };
+function showToast(m,t='success'){$('toastMessage').textContent=m;$('toast').className=`toast ${t}`;$('toastIcon').className=t==='success'?'fas fa-check-circle':'fas fa-exclamation-circle';$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3000);}
+function showTopAlert(msg){const b=$('topNotification');$('bannerMessage').innerText=msg;b.classList.add('active');document.title="⚠️";b.onclick=()=>{b.classList.remove('active');document.title="Tutorials - Motion-Flow";};setTimeout(()=>{b.classList.remove('active');document.title="Tutorials - Motion-Flow";},4000);}
+function formatCount(n){if(!n||n<1)return'0';if(n>=1000000)return(n/1000000).toFixed(1).replace(/\.0$/,'')+'M';if(n>=1000)return(n/1000).toFixed(1).replace(/\.0$/,'')+'K';return String(n);}
+function linkify(text){return(text||'').replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');}
+
+function showConfirmDialog(opts){
+  const { title, message, type='danger', showInput=false, inputValue='', inputPlaceholder='', onConfirm } = opts;
+  const d=$('confirmDialog'), ic=$('confirmDialogIcon'), ti=$('confirmDialogTitle'), tx=$('confirmDialogText'), inp=$('confirmDialogInput'), yb=$('confirmDialogYes'), nb=$('confirmDialogNo');
+  d.classList.remove('danger'); ic.classList.remove('danger');
+  if(type==='danger'){ d.classList.add('danger'); ic.innerHTML='<i class="fa-solid fa-trash-can" style="color:var(--color-error)"></i>'; yb.className='confirm-dialog-yes'; }
+  else if(type==='edit'){ ic.innerHTML='<i class="fa-solid fa-pen-to-square" style="color:var(--color-primary)"></i>'; yb.className='confirm-dialog-yes save-btn'; }
+  else { ic.innerHTML='<i class="fa-solid fa-circle-question" style="color:var(--color-primary)"></i>'; yb.className='confirm-dialog-yes save-btn'; }
+  ti.textContent=title; tx.textContent=message;
+  if(showInput){ inp.style.display='block'; inp.value=inputValue; inp.placeholder=inputPlaceholder||''; inp.focus(); } else { inp.style.display='none'; }
+  yb.onclick=()=>{ $('confirmDialogOverlay').classList.remove('active'); if(onConfirm) showInput ? onConfirm(inp.value.trim()) : onConfirm(); };
+  nb.onclick=()=>$('confirmDialogOverlay').classList.remove('active');
+  $('confirmDialogOverlay').classList.add('active');
+}
+
+function listenForHomeNotifications(){localStorage.setItem('homeLastSeen',Date.now());$('homeDot')?.classList.remove('active');onValue(ref(db,'tools'),()=>{localStorage.setItem('homeLastSeen',Date.now());$('homeDot')?.classList.remove('active');});}
+function listenForUpdatesNotifications(){onValue(ref(db,'updates'),(snap)=>{if(!snap.exists())return;const vs=Object.values(snap.val());if(vs.length>0){const latest=vs.reduce((a,b)=>(a.createdAt>b.createdAt?a:b));const ls=parseInt(localStorage.getItem('lastVisitUpdates')||'0');$('updatesDot')?.classList.toggle('active',latest.createdAt>ls);if(latest.createdAt>ls)showTopAlert("New Platform Update Posted!");}});}
+function listenForChatNotifications(){onValue(ref(db,`artifacts/${APP_ID}/public/data/liveChat/messages`),(snap)=>{if(!snap.exists())return;const ms=Object.values(snap.val());if(!ms.length)return;let lt=0;ms.forEach(m=>{const mt=m.timestamp||m.createdAt||m.time||0;if(mt>lt)lt=mt;});const ls=parseInt(localStorage.getItem('chatLastSeen')||'0');if($('chatDot')&&lt>ls){$('chatDot').classList.add('active');showTopAlert("New Message in Live Chat!");}});}
+function initAllNotifications(){listenForHomeNotifications();listenForUpdatesNotifications();listenForChatNotifications();}
+window.markUpdatesSeen=()=>{localStorage.setItem('lastVisitUpdates',Date.now());$('updatesDot')?.classList.remove('active');};
+window.markChatSeen=()=>{localStorage.setItem('chatLastSeen',Date.now());$('chatDot')?.classList.remove('active');};
+window.toggleToolsDropdown=e=>{e.stopPropagation();$('toolsDropdownItems').classList.toggle('open');};
+document.addEventListener('click',e=>{if(!e.target.closest('.tools-dropdown-header')&&!e.target.closest('#toolsDropdownItems'))$('toolsDropdownItems')?.classList.remove('open');});
+
+window.clearSearch=()=>{$('searchInput').value='';$('clearSearchBtn').classList.remove('visible');$('searchSuggestions').classList.remove('active');currentSearchQuery='';renderTutorials();};
+function debounceSearch(q){clearTimeout(searchDebounceTimer);searchDebounceTimer=setTimeout(()=>{currentSearchQuery=q.toLowerCase();renderTutorials();updateSuggestions(q);},300);}
+function updateSuggestions(q){if(!q||q.length<1){$('searchSuggestions').classList.remove('active');return;}const sugs=allTutorials.filter(t=>t.title.toLowerCase().includes(q.toLowerCase())).slice(0,5);if(sugs.length){$('searchSuggestions').innerHTML='';sugs.forEach(s=>{const d=document.createElement('div');d.className='suggestion-item';d.innerHTML=`<i class="fas fa-play-circle"></i><span>${escapeHtml(s.title)}</span>`;d.onclick=()=>{$('searchInput').value=s.title;$('clearSearchBtn').classList.add('visible');currentSearchQuery=s.title.toLowerCase();renderTutorials();$('searchSuggestions').classList.remove('active');};$('searchSuggestions').appendChild(d);});$('searchSuggestions').classList.add('active');}else $('searchSuggestions').classList.remove('active');}
+$('searchInput').oninput=e=>{const q=e.target.value;if(q){$('clearSearchBtn').classList.add('visible');debounceSearch(q);}else{$('clearSearchBtn').classList.remove('visible');$('searchSuggestions').classList.remove('active');currentSearchQuery='';renderTutorials();}};
+$('searchBtn').onclick=()=>{const q=$('searchInput').value.trim();currentSearchQuery=q?q.toLowerCase():'';renderTutorials();};
+document.addEventListener('click',e=>{if(!e.target.closest('#searchInput')&&!e.target.closest('#searchSuggestions'))$('searchSuggestions').classList.remove('active');});
+
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(f);r.onload=()=>res(r.result);r.onerror=rej;});}
+async function recordTutorialView(tutorialId){if(!currentUserId||viewedTutorialsInSession.includes(tutorialId))return;viewedTutorialsInSession.push(tutorialId);sessionStorage.setItem('mf_viewed_tutorials',JSON.stringify(viewedTutorialsInSession));try{await runTransaction(ref(db,`tutorials/${tutorialId}/views`),current=>(current||0)+1);}catch(e){}try{const userViewRef=ref(db,`tutorials/${tutorialId}/uniqueViewers/${currentUserId}`);if(!(await get(userViewRef)).exists())await set(userViewRef,true);}catch(e){}}
+async function getUniqueViewCount(tutorialId){try{const s=await get(ref(db,`tutorials/${tutorialId}/uniqueViewers`));return s.exists()?Object.keys(s.val()).length:0;}catch(e){return 0;}}
+
+window.handleThumbnailClick=(tutorialId,videoUrl,title)=>{recordTutorialView(tutorialId);openVideoPlayer(videoUrl,title,tutorialId);};
+window.openVideoPlayer=(url,title,tutorialId)=>{if(!url||url==='#'){showToast('Video not available','error');return;}const video=$('videoPlayerElement');video.src=url;video.load();$('videoPlayerModal').classList.add('active');document.body.style.overflow='hidden';document.title=title+' - Motion-Flow';video.play().catch(()=>{});recordTutorialView(tutorialId);};
+window.closeVideoPlayer=()=>{$('videoPlayerModal').classList.remove('active');const video=$('videoPlayerElement');video.pause();video.src='';document.body.style.overflow='auto';document.title="Tutorials - Motion-Flow";};
+$('videoPlayerModal').addEventListener('click',e=>{if(e.target===$('videoPlayerModal'))closeVideoPlayer();});
+
+function toggleSidebar(){sidebarOpen=!sidebarOpen;$('sidebar').classList.toggle('open',sidebarOpen);$('sidebarOverlay').classList.toggle('active',sidebarOpen);document.body.style.overflow=sidebarOpen?'hidden':'';}
+$('hamburgerBtn').onclick=toggleSidebar;$('sidebarOverlay').onclick=toggleSidebar;
+$('logoutSidebarBtn').onclick=()=>$('logoutDialog').classList.add('active');
+$('logoutConfirm').onclick=async()=>{try{await signOut(auth);window.location.href="../index.html";}catch(e){showToast('Failed','error');}};
+$('logoutCancel').onclick=()=>$('logoutDialog').classList.remove('active');
+
+$('brandLogo').onclick=()=>{adminClickCount++;clearTimeout(adminClickTimer);adminClickTimer=setTimeout(()=>adminClickCount=0,2000);if(adminClickCount>=3){adminClickCount=0;openAdminLogin();}};
+function openAdminLogin(){const modal=document.createElement('div');modal.className='admin-modal-overlay active';modal.id='adminLoginModalDynamic';modal.innerHTML=`<div class="admin-modal-content"><h2 style="margin-bottom:20px;color:var(--color-primary);text-align:center;"><i class="fa-solid fa-lock"></i> Admin Login</h2><div class="admin-form-group"><label class="admin-form-label">Email</label><input type="email" id="dynAdminEmail" class="admin-form-input" placeholder="motionflow.admins@gmail.com"></div><div class="admin-form-group"><label class="admin-form-label">Password</label><input type="password" id="dynAdminPassword" class="admin-form-input" placeholder="MOTION-FLOW-ADMIN"></div><div class="admin-form-group" id="dynTwoFactorSection" style="display:none;"><label class="admin-form-label">2FA Access Code</label><input type="text" id="dynAdmin2FACode" class="admin-form-input" placeholder="accessCode"></div><div class="admin-form-buttons"><button class="admin-form-submit" id="dynAdminLoginSubmit">Login</button><button class="admin-form-cancel" onclick="closeDynamicAdminModal()">Cancel</button></div></div>`;document.body.appendChild(modal);document.getElementById('dynAdminLoginSubmit').onclick=async()=>{const em=document.getElementById('dynAdminEmail').value.trim(),pw=document.getElementById('dynAdminPassword').value.trim(),fa=document.getElementById('dynAdmin2FACode')?.value.trim()||'';const btn=document.getElementById('dynAdminLoginSubmit');if(!em||!pw)return;if(em!==ADMIN_EMAIL||pw!==ADMIN_PASSWORD){showToast('Invalid credentials','error');return;}const tfs=document.getElementById('dynTwoFactorSection');if(tfs.style.display==='none'){tfs.style.display='block';return;}if(!fa)return;btn.classList.add('loading-btn');btn.disabled=true;btn.textContent='';try{const s=await get(ref(db,'admin/accessCode'));if(s.exists()&&s.val()===fa){isAdmin=true;closeDynamicAdminModal();showToast('Admin login!','success');setTimeout(()=>openTutorialModal(),500);}else{showToast('Invalid access code','error');}}catch(e){}finally{btn.classList.remove('loading-btn');btn.disabled=false;btn.textContent='Login';}};}
+window.closeDynamicAdminModal=()=>{const m=document.getElementById('adminLoginModalDynamic');if(m)m.remove();};
+window.closeSuccessPopup=()=>$('successPopup').classList.remove('active');
+function showUploadStatus(m,t='loading'){$('uploadStatus').className=`upload-status ${t}`;$('uploadStatusText').textContent=m;$('uploadStatus').style.display='flex';}
+function hideUploadStatus(){$('uploadStatus').style.display='none';$('uploadStatus').className='upload-status';}
+
+window.showDeleteConfirm=(id,name)=>{pendingDeleteId=id;pendingDeleteName=name;$('deleteConfirmProductName').textContent=name;$('deleteConfirmOverlay').classList.add('active');const yb=$('deleteConfirmYes');yb.classList.remove('loading');yb.querySelector('.btn-text').style.display='inline';yb.querySelector('.btn-spinner').style.display='none';};
+async function executeDelete(){if(!pendingDeleteId||!isAdmin)return;const yb=$('deleteConfirmYes');yb.classList.add('loading');yb.querySelector('.btn-text').style.display='none';yb.querySelector('.btn-spinner').style.display='inline-block';try{await remove(ref(db,`tutorials/${pendingDeleteId}`));$('deleteConfirmOverlay').classList.remove('active');showToast(`"${pendingDeleteName}" deleted`,'success');loadAdminTutorials();}catch(e){showToast('Error: '+e.message,'error');yb.classList.remove('loading');yb.querySelector('.btn-text').style.display='inline';yb.querySelector('.btn-spinner').style.display='none';}pendingDeleteId=null;pendingDeleteName=null;}
+$('deleteConfirmYes').onclick=executeDelete;
+$('deleteConfirmNo').onclick=()=>{$('deleteConfirmOverlay').classList.remove('active');pendingDeleteId=null;pendingDeleteName=null;};
+$('deleteConfirmOverlay').addEventListener('click',e=>{if(e.target===$('deleteConfirmOverlay')){$('deleteConfirmOverlay').classList.remove('active');pendingDeleteId=null;pendingDeleteName=null;}});
+
+window.openCommentManagement=(tutorialId)=>{currentManagingTutorialId=tutorialId;loadAdminComments(tutorialId);$('commentManagementModal').classList.add('active');};
+window.closeCommentManagement=()=>{$('commentManagementModal').classList.remove('active');currentManagingTutorialId=null;};
+function loadAdminComments(tutorialId){const tut=allTutorials.find(t=>t.key===tutorialId);const list=$('adminCommentsList');if(!list)return;list.innerHTML='';if(!tut||!tut.comments){list.innerHTML='<div style="text-align:center;color:var(--color-text-muted);padding:20px;">No comments</div>';return;}const comments=Object.entries(tut.comments);if(!comments.length){list.innerHTML='<div style="text-align:center;color:var(--color-text-muted);padding:20px;">No comments</div>';return;}comments.sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0));comments.forEach(([cid,c])=>{const div=document.createElement('div');div.className='comment-item';div.innerHTML=`<div class="comment-header"><span class="comment-author">${escapeHtml(c.userName)}</span><span class="comment-time">${getTimeAgo(c.timestamp)}</span></div><div class="comment-text">${escapeHtml(c.text)}</div><div class="comment-actions-row"><button class="comment-delete-btn" onclick="window.adminDeleteComment('${escapeOnclick(tutorialId)}','${escapeOnclick(cid)}')"><i class="fas fa-trash"></i> Delete</button></div>`;list.appendChild(div);});}
+window.adminDeleteComment=async(tutorialId,commentId)=>{if(!isAdmin)return;try{await remove(ref(db,`tutorials/${tutorialId}/comments/${commentId}`));showToast('Deleted','success');if(currentManagingTutorialId===tutorialId)loadAdminComments(tutorialId);}catch(e){showToast('Error','error');}};
+
+async function loadAdminTutorials(){try{const s=await get(ref(db,'tutorials'));$('adminTutorialsList').innerHTML='';if(s.exists()){Object.keys(s.val()).forEach(k=>{const t=s.val()[k];if(!t)return;const d=document.createElement('div');d.className='admin-product-item';d.innerHTML=`<div class="admin-product-info"><div class="admin-product-name">${escapeHtml(t.title||'Unnamed')}</div></div><div class="admin-product-actions"><button class="admin-product-edit" onclick="window.editTutorial('${escapeOnclick(k)}')"><i class="fas fa-edit"></i></button><button class="admin-product-comments" onclick="window.openCommentManagement('${escapeOnclick(k)}')"><i class="fas fa-comments"></i></button><button class="admin-product-delete" onclick="window.showDeleteConfirm('${escapeOnclick(k)}','${escapeOnclick(t.title||'Tutorial')}')"><i class="fas fa-trash"></i></button></div>`;$('adminTutorialsList').appendChild(d);});}else{$('adminTutorialsList').innerHTML='<div style="text-align:center;color:var(--color-text-muted);padding:20px;">No tutorials yet</div>';}}catch(e){$('adminTutorialsList').innerHTML='<div style="text-align:center;color:var(--color-error);padding:20px;">Error loading</div>';}}
+window.editTutorial=function(id){const t=allTutorials.find(x=>x.key===id);if(!t)return;currentEditId=id;$('editingTutorialId').value=id;$('tutorialTitle').value=t.title||'';$('tutorialDescription').value=t.description||'';$('tutorialVideoUrl').value=t.videoUrl||'';$('tutorialDuration').value=t.duration||'';$('tutorialAdminName').value=t.adminName||'';$('tutorialThumbnailFile').required=false;$('tutorialModalTitle').innerHTML='<i class="fas fa-edit"></i> Edit Tutorial';$('tutorialSubmitBtn').textContent='Save Changes';$('adminTutorialModal').classList.add('active');};
+
+$('tutorialUploadForm').onsubmit=async e=>{e.preventDefault();if(!currentUserId||!isAdmin){showToast('Admin required','error');return;}const title=$('tutorialTitle').value.trim(),desc=$('tutorialDescription').value.trim(),videoUrl=$('tutorialVideoUrl').value.trim(),duration=$('tutorialDuration').value.trim(),adminName=$('tutorialAdminName').value.trim();const thumbFile=$('tutorialThumbnailFile').files[0];if(!title||!videoUrl||!duration||!adminName){showToast('Fill all fields','error');return;}if(!thumbFile&&!currentEditId){showToast('Thumbnail required','error');return;}$('tutorialSubmitBtn').classList.add('loading-btn');$('tutorialSubmitBtn').disabled=true;$('tutorialSubmitBtn').textContent='';showUploadStatus(currentEditId?'Updating...':'Uploading...');try{let thumbnailUrl='';if(currentEditId){const ex=allTutorials.find(x=>x.key===currentEditId);thumbnailUrl=ex?.thumbnailUrl||'';}if(thumbFile)thumbnailUrl=await fileToBase64(thumbFile);const data={title,description:desc,videoUrl,thumbnailUrl,duration,adminName,updatedAt:Date.now()};if(currentEditId){const ex=allTutorials.find(x=>x.key===currentEditId);data.createdAt=ex?.createdAt||Date.now();data.views=ex?.views||0;data.likes=ex?.likes||{};data.comments=ex?.comments||{};data.uniqueViewers=ex?.uniqueViewers||{};await set(ref(db,`tutorials/${currentEditId}`),data);}else{data.createdAt=Date.now();data.views=0;data.likes={};data.comments={};data.uniqueViewers={};const nr=push(ref(db,'tutorials'));await set(nr,data);}showUploadStatus(currentEditId?'Updated!':'Uploaded!','success');setTimeout(()=>{hideUploadStatus();$('tutorialSubmitBtn').classList.remove('loading-btn');$('tutorialSubmitBtn').disabled=false;$('tutorialSubmitBtn').textContent='Upload Tutorial';$('tutorialUploadForm').reset();currentEditId=null;$('tutorialThumbnailFile').required=true;$('tutorialModalTitle').innerHTML='<i class="fa-solid fa-plus"></i> Add Tutorial';loadAdminTutorials();$('successPopup').querySelector('.success-message').textContent='Tutorial added!';$('successPopup').classList.add('active');},1500);}catch(er){$('tutorialSubmitBtn').classList.remove('loading-btn');$('tutorialSubmitBtn').disabled=false;$('tutorialSubmitBtn').textContent='Upload Tutorial';showUploadStatus('Error: '+er.message,'error');setTimeout(hideUploadStatus,3000);}};
+
+function openTutorialModal(){currentEditId=null;$('tutorialUploadForm').reset();$('tutorialThumbnailFile').required=true;$('tutorialModalTitle').innerHTML='<i class="fa-solid fa-plus"></i> Add Tutorial';$('tutorialSubmitBtn').textContent='Upload Tutorial';$('tutorialSubmitBtn').classList.remove('loading-btn');$('tutorialSubmitBtn').disabled=false;$('adminTutorialModal').classList.add('active');loadAdminTutorials();$('adminTutorialsSection').style.display='block';}
+window.closeTutorialModal=()=>{$('adminTutorialModal').classList.remove('active');$('tutorialUploadForm').reset();hideUploadStatus();currentEditId=null;};
+
+async function loadProfile(uid){try{const ps=[doc(firestore,"artifacts",APP_ID,"users",uid,"profile","settings"),doc(firestore,"users",uid)];let d=null;for(const r of ps){try{const dc=await getDoc(r);if(dc.exists()){d=dc.data();break;}}catch(e){}}currentUserData=d||{username:`User${uid.substring(0,6)}`,nickname:`User${uid.substring(0,6)}`,profileImage:null,userId:uid};}catch(e){currentUserData={username:`User${uid.substring(0,6)}`,nickname:`User${uid.substring(0,6)}`,profileImage:null,userId:uid};}}
+
+function loadTutorials(){
+  if(!currentUserId){setTimeout(loadTutorials,1000);return;}
+  onValue(ref(db,'tutorials'),snap=>{
+    if(snap.exists()){
+      const d=snap.val();allTutorials=[];
+      Object.keys(d).forEach(k=>{const t=d[k];if(!t)return;
+        allTutorials.push({...t,key:k,title:t.title||'Untitled',description:t.description||'',videoUrl:t.videoUrl||'#',thumbnailUrl:t.thumbnailUrl||'https://via.placeholder.com/640x360/1a1a2e/00bcd4?text=No+Thumbnail',duration:t.duration||'00:00',adminName:t.adminName||'Motion-Flow',createdAt:t.createdAt||Date.now(),views:t.views||0,likes:t.likes||{},comments:t.comments||{},uniqueViewers:t.uniqueViewers||{}});
+      });
+      allTutorials.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    } else { allTutorials=[]; }
+    renderTutorials();
+  },er=>{$('tutorialsGrid').innerHTML='<div class="empty-state"><div class="empty-icon"><i class="fas fa-exclamation-triangle"></i></div><h3>Connection Issue</h3></div>';});
+}
+
+function renderTutorials(){
+  const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+  let filtered=[...allTutorials]; if(currentSearchQuery)filtered=filtered.filter(t=>t.title.toLowerCase().includes(currentSearchQuery));
+  $('tutorialsGrid').innerHTML='';
+  if(!filtered.length){$('tutorialsGrid').innerHTML=allTutorials.length===0?`<div class="empty-state"><div class="empty-icon"><i class="fas fa-video-slash"></i></div><h3>No Tutorials Yet</h3><p>Check back soon!</p></div>`:`<div class="empty-state"><div class="empty-icon"><i class="fas fa-search"></i></div><h3>No Results</h3><p>No tutorials match "${escapeHtml(currentSearchQuery)}"</p></div>`;}
+  else {for(const t of filtered)createTutorialCard(t);}
+  window.scrollTo({ top: currentScroll, behavior: 'instant' });
+}
+
+function createTutorialCard(tutorial){
+  const card=document.createElement('div');card.className='tutorial-card';card.id=`tutorial-${tutorial.key}`;
+  const ek=escapeOnclick(tutorial.key),en=escapeOnclick(tutorial.title),ev=escapeOnclick(tutorial.videoUrl);
+  const cc=tutorial.comments?Object.keys(tutorial.comments).length:0;
+  const likeCount=tutorial.likes?Object.keys(tutorial.likes).length:0;
+  const hasLiked=currentUserId&&tutorial.likes&&tutorial.likes[currentUserId];
+  const sl=`${location.origin}${location.pathname}#tutorial-${tutorial.key}`;
+  const descHtml=tutorial.description?linkify(escapeHtml(tutorial.description)):'';
+  const truncateThreshold=120, shouldTruncate=tutorial.description&&tutorial.description.length>truncateThreshold;
+  const isExpanded = !shouldTruncate;
+
+  card.innerHTML=`
+    <div class="thumb-wrapper" onclick="event.stopPropagation();window.handleThumbnailClick('${ek}','${ev}','${en}')">
+      <img src="${tutorial.thumbnailUrl}" alt="${escapeHtml(tutorial.title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/640x360/1a1a2e/00bcd4?text=Tutorial'">
+      <div class="play-overlay"><i class="fas fa-play-circle"></i></div>
+      <div class="duration-badge">${escapeHtml(tutorial.duration)}</div>
+    </div>
+    <div class="tutorial-info">
+      <div class="video-meta-row"><div class="channel-avatar"><i class="fas fa-play"></i></div><div class="video-details"><div class="video-title">${escapeHtml(tutorial.title)}</div><div class="video-meta-sub"><span>Motion-Flow</span> • <span>${getTimeAgo(tutorial.createdAt)}</span></div></div></div>
+      <div class="description-wrapper ${isExpanded?'expanded':'truncated'}" id="desc-wrapper-${tutorial.key}">
+        <div class="tutorial-description ${isExpanded?'expanded':'truncated'}" id="desc-${tutorial.key}">${descHtml}</div>
+        ${shouldTruncate?`<button class="see-more-btn" onclick="event.stopPropagation();window.showMore('${tutorial.key}')" style="display:${isExpanded?'none':'inline-block'}">See more</button>`:''}
+        <button class="see-less-btn" onclick="event.stopPropagation();window.showLess('${tutorial.key}')" style="display:${isExpanded&&shouldTruncate?'inline-block':'none'}">See less</button>
+      </div>
+      <div class="user-info"><span class="username">${escapeHtml(tutorial.adminName)}<span class="admin-badge"><i class="fas fa-crown"></i> Admin</span></span><span class="time">${new Date(tutorial.createdAt).toLocaleDateString()}</span></div>
+      <div class="tutorial-meta-row"><div class="view-count-badge"><i class="fas fa-eye"></i> <span id="view-${tutorial.key}">0</span></div><span style="font-size:0.75rem;color:var(--color-text-muted)">${cc>0?cc+' comment'+(cc!==1?'s':''):''}</span></div>
+      <div class="tutorial-actions">
+        <button class="like-btn ${hasLiked?'liked':''}" onclick="event.stopPropagation();window.toggleLike('${ek}', event)"><i class="${hasLiked?'fas':'far'} fa-heart"></i> <span id="like-count-${tutorial.key}">${formatCount(likeCount)}</span></button>
+        <button class="comment-btn" onclick="event.stopPropagation();window.toggleComments('${ek}')"><i class="fas fa-comment"></i> ${cc>0?`<span class="comment-count">${cc}</span>`:''}</button>
+        <button class="share-btn" onclick="event.stopPropagation();window.shareTutorial('${ek}','${en}','${escapeOnclick(sl)}')"><i class="fas fa-share-alt"></i> Share</button>
+      </div>
+      <div class="comments-section" id="comments-${ek}">
+        <div class="comments-header"><span>Comments</span><button class="close-comments-btn" onclick="event.stopPropagation();window.closeCommentsSection('${ek}')"><i class="fas fa-times"></i></button></div>
+        <div class="comments-list" id="clist-${ek}"></div>
+        <div class="add-comment"><textarea class="comment-input" id="cinput-${ek}" placeholder="Add a comment..."></textarea><button class="comment-submit" onclick="event.stopPropagation();window.addComment('${ek}')">Post</button></div>
+      </div>
+    </div>`;
+  $('tutorialsGrid').appendChild(card);
+  
+  getUniqueViewCount(tutorial.key).then(count=>{
+    const vs=document.getElementById(`view-${tutorial.key}`); if(vs)vs.textContent=formatCount(count);
+  });
+  
+  const ci=document.getElementById(`cinput-${tutorial.key}`);
+  if(ci)ci.addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();window.addComment(tutorial.key);}});
+  
+  loadComments(tutorial.key);
+}
+
+window.showMore=(tutorialId)=>{
+  const desc=document.getElementById(`desc-${tutorialId}`),wrapper=document.getElementById(`desc-wrapper-${tutorialId}`);
+  if(!desc||!wrapper)return;
+  desc.classList.remove('truncated');desc.classList.add('expanded');
+  wrapper.classList.remove('truncated');wrapper.classList.add('expanded');
+  wrapper.querySelector('.see-more-btn').style.display='none';
+  wrapper.querySelector('.see-less-btn').style.display='inline-block';
+};
+
+window.showLess=(tutorialId)=>{
+  const desc=document.getElementById(`desc-${tutorialId}`),wrapper=document.getElementById(`desc-wrapper-${tutorialId}`);
+  if(!desc||!wrapper)return;
+  desc.classList.remove('expanded');desc.classList.add('truncated');
+  wrapper.classList.remove('expanded');wrapper.classList.add('truncated');
+  wrapper.querySelector('.see-more-btn').style.display='inline-block';
+  wrapper.querySelector('.see-less-btn').style.display='none';
+};
+
+window.toggleLike=async function(tutorialId,event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  if(!currentUserId){showToast('Login required','error');return;}
+  const likeBtn=document.querySelector(`#tutorial-${tutorialId} .like-btn`);
+  const likeCountSpan=document.getElementById(`like-count-${tutorialId}`);
+  if(!likeBtn||!likeCountSpan)return;
+  const currentlyLiked=likeBtn.classList.contains('liked');
+  const currentCount=parseInt(likeCountSpan.textContent.replace(/[^0-9]/g,''))||0;
+  const newLiked=!currentlyLiked,newCount=currentlyLiked?Math.max(0,currentCount-1):currentCount+1;
+  if(newLiked){likeBtn.classList.add('liked');likeBtn.querySelector('i').className='fas fa-heart';}else{likeBtn.classList.remove('liked');likeBtn.querySelector('i').className='far fa-heart';}
+  likeCountSpan.textContent=formatCount(newCount);
+  const tutorial=allTutorials.find(t=>t.key===tutorialId);if(tutorial){if(!tutorial.likes)tutorial.likes={};if(newLiked)tutorial.likes[currentUserId]=true;else delete tutorial.likes[currentUserId];}
+  const likeRef=ref(db,`tutorials/${tutorialId}/likes/${currentUserId}`);
+  if(newLiked){set(likeRef,true).catch(()=>{likeBtn.classList.toggle('liked');likeBtn.querySelector('i').className=currentlyLiked?'fas fa-heart':'far fa-heart';likeCountSpan.textContent=formatCount(currentCount);});}
+  else{remove(likeRef).catch(()=>{likeBtn.classList.toggle('liked');likeBtn.querySelector('i').className=currentlyLiked?'fas fa-heart':'far fa-heart';likeCountSpan.textContent=formatCount(currentCount);});}
+};
+
+window.toggleCommentLike=async(tutorialId,commentId,event)=>{
+  if(event){event.preventDefault();event.stopPropagation();}
+  if(!currentUserId){showToast('Login required','error');return;}
+  const commentItem=document.querySelector(`[data-comment-id="${commentId}"]`);if(!commentItem)return;
+  const likeBtn=commentItem.querySelector('.comment-like-btn');if(!likeBtn)return;
+  const currentlyLiked=likeBtn.classList.contains('liked');
+  const currentText=likeBtn.textContent.trim();const currentCount=parseInt(currentText.replace(/[^0-9]/g,''))||0;
+  const newLiked=!currentlyLiked,newCount=currentlyLiked?Math.max(0,currentCount-1):currentCount+1;
+  if(newLiked){likeBtn.classList.add('liked');likeBtn.querySelector('i').className='fas fa-heart';}else{likeBtn.classList.remove('liked');likeBtn.querySelector('i').className='far fa-heart';}
+  likeBtn.innerHTML=likeBtn.querySelector('i').outerHTML+(newCount>0?' '+newCount:'');
+  const tutorial=allTutorials.find(t=>t.key===tutorialId);if(tutorial&&tutorial.comments&&tutorial.comments[commentId]){const comment=tutorial.comments[commentId];if(!comment.likes)comment.likes={};if(newLiked)comment.likes[currentUserId]=true;else delete comment.likes[currentUserId];}
+  const likeRef=ref(db,`tutorials/${tutorialId}/comments/${commentId}/likes/${currentUserId}`);
+  if(newLiked){set(likeRef,true).catch(()=>{likeBtn.classList.toggle('liked');likeBtn.querySelector('i').className=currentlyLiked?'fas fa-heart':'far fa-heart';likeBtn.innerHTML=likeBtn.querySelector('i').outerHTML+(currentCount>0?' '+currentCount:'');});}
+  else{remove(likeRef).catch(()=>{likeBtn.classList.toggle('liked');likeBtn.querySelector('i').className=currentlyLiked?'fas fa-heart':'far fa-heart';likeBtn.innerHTML=likeBtn.querySelector('i').outerHTML+(currentCount>0?' '+currentCount:'');});}
+};
+
+window.closeCommentsSection=pid=>{const s=document.getElementById(`comments-${pid}`);if(s)s.classList.remove('active');};
+window.toggleComments=pid=>{const s=document.getElementById(`comments-${pid}`);if(s){s.classList.toggle('active');if(s.classList.contains('active'))loadComments(pid);}};
+
+function loadComments(pid){
+  const a=allTutorials.find(x=>x.key===pid);if(!a)return;
+  const cl=document.getElementById(`clist-${pid}`);if(!cl)return;
+  const commentScrollTop=cl.scrollTop;cl.innerHTML='';
+  const cs=Object.entries(a.comments||{}).filter(([_,c])=>!c.parentId);
+  if(!cs.length){cl.innerHTML='<div style="text-align:center;color:var(--color-text-muted);padding:15px;">No comments yet</div>';return;}
+  cs.sort((a,b)=>(b[1].timestamp||0)-(a[1].timestamp||0));
+  cs.forEach(([cid,c])=>{
+    const av=c.profileImage||`https://ui-avatars.com/api/?name=${encodeURIComponent(c.userName)}&background=00bcd4&color=fff`;
+    const d=document.createElement('div');d.className='comment-item';d.dataset.commentId=cid;
+    const own=c.userId===currentUserId;
+    const likesCount=c.likes?Object.keys(c.likes).length:0;
+    const likedByUser=currentUserId&&c.likes&&c.likes[currentUserId];
+    const replies=Object.entries(a.comments||{}).filter(([_,rc])=>rc.parentId===cid);
+    const replyCount=replies.length;
+    d.innerHTML=`<div class="comment-header" onclick="event.stopPropagation(); window.visitUserProfile('${escapeOnclick(c.userId)}')"><img src="${av}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1a1a2e&color=fff'"><span class="comment-author">${escapeHtml(c.userName)}</span><span class="comment-time">${getTimeAgo(c.timestamp)}${c.edited?' (edited)':''}</span></div><div class="comment-text">${escapeHtml(c.text)}</div><div class="comment-actions-row"><button class="comment-like-btn ${likedByUser?'liked':''}" onclick="event.preventDefault();event.stopPropagation();window.toggleCommentLike('${escapeOnclick(pid)}','${escapeOnclick(cid)}', event)"><i class="${likedByUser?'fas':'far'} fa-heart"></i> ${likesCount||''}</button><button class="comment-reply-btn" onclick="event.stopPropagation();window.showReplyInput('${escapeOnclick(pid)}','${escapeOnclick(cid)}')"><i class="fas fa-reply"></i> Reply</button>${own?`<button class="comment-edit-btn" onclick="event.stopPropagation();window.showEditCommentPopup('${escapeOnclick(pid)}','${escapeOnclick(cid)}','${escapeOnclick(c.text)}')"><i class="fas fa-pen"></i></button><button class="comment-delete-btn" onclick="event.stopPropagation();window.showDeleteCommentPopup('${escapeOnclick(pid)}','${escapeOnclick(cid)}')"><i class="fas fa-trash"></i></button>`:''}</div><div class="reply-input-row" id="reply-row-${cid}" style="display:none;"><textarea class="comment-input" id="reply-input-${cid}" placeholder="Write a reply..."></textarea><button class="comment-submit" onclick="event.stopPropagation();window.submitReply('${escapeOnclick(pid)}','${escapeOnclick(cid)}')">Reply</button></div>${replyCount>0?`<button class="toggle-replies-btn" onclick="event.stopPropagation();window.toggleReplies('${escapeOnclick(pid)}','${escapeOnclick(cid)}')">View ${replyCount} repl${replyCount!==1?'ies':'y'}</button>`:''}<div class="replies-container" id="replies-${cid}"></div>`;
+    cl.appendChild(d);
+    const ri=document.getElementById(`reply-input-${cid}`);if(ri)ri.addEventListener('keypress',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();window.submitReply(pid,cid);}});
+  });
+  requestAnimationFrame(()=>{cl.scrollTop=commentScrollTop;});
+}
+
+window.showReplyInput=(pid,parentId)=>{const row=document.getElementById(`reply-row-${parentId}`);if(row){row.style.display='flex';document.getElementById(`reply-input-${parentId}`).focus();}};
+window.submitReply=async(pid,parentId)=>{
+  const inp=document.getElementById(`reply-input-${parentId}`);if(!inp)return;
+  const tx=inp.value.trim();if(!tx||tx.length>500){showToast(tx?'Max 500 chars':'Enter reply','error');return;}
+  const un=currentUserData?(currentUserData.nickname||currentUserData.username||`User${currentUserId.substring(0,6)}`):`User${currentUserId.substring(0,6)}`;
+  const pi=currentUserData?.profileImage||null;
+  const cid='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+  set(ref(db,`tutorials/${pid}/comments/${cid}`),{id:cid,text:tx,userId:currentUserId,userName:un,profileImage:pi,timestamp:Date.now(),parentId}).then(()=>{inp.value='';showToast('Replied!','success');}).catch(()=>{showToast('Error','error');});
+};
+
+window.showEditCommentPopup=(pid,cid,currentText)=>{showConfirmDialog({title:'Edit Comment',message:'Update your comment:',type:'edit',showInput:true,inputValue:currentText,inputPlaceholder:'Edit...',onConfirm:async(nt)=>{if(!nt||nt===currentText)return;await set(ref(db,`tutorials/${pid}/comments/${cid}`),{...allTutorials.find(t=>t.key===pid)?.comments?.[cid],text:nt,edited:true,editedAt:Date.now()});showToast('Updated!','success');}});};
+window.showDeleteCommentPopup=(pid,cid)=>{showConfirmDialog({title:'Delete Comment?',message:'This cannot be undone.',type:'danger',onConfirm:async()=>{await remove(ref(db,`tutorials/${pid}/comments/${cid}`));showToast('Deleted','success');}});};
+
+window.addComment=async pid=>{
+  if(!currentUserId){showToast('Login required','error');return;}
+  const inp=document.getElementById(`cinput-${pid}`);if(!inp)return;
+  const tx=inp.value.trim();if(!tx||tx.length>500){showToast(tx?'Max 500 chars':'Enter comment','error');return;}
+  const un=currentUserData?(currentUserData.nickname||currentUserData.username||`User${currentUserId.substring(0,6)}`):`User${currentUserId.substring(0,6)}`;
+  const pi=currentUserData?.profileImage||null;
+  const cid='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+  inp.value='';
+  set(ref(db,`tutorials/${pid}/comments/${cid}`),{id:cid,text:tx,userId:currentUserId,userName:un,profileImage:pi,timestamp:Date.now()}).then(()=>{showToast('Posted!','success');}).catch(()=>{showToast('Error posting','error');});
+};
+
+window.toggleReplies=(pid,parentId)=>{
+  const container=document.getElementById(`replies-${parentId}`);if(!container)return;
+  if(container.classList.contains('active')){container.classList.remove('active');return;}
+  const a=allTutorials.find(x=>x.key===pid);if(!a)return;
+  const replies=Object.entries(a.comments||{}).filter(([_,c])=>c.parentId===parentId);
+  container.innerHTML='';replies.sort((a,b)=>(a[1].timestamp||0)-(b[1].timestamp||0));
+  replies.forEach(([rid,rc])=>{
+    const av=rc.profileImage||`https://ui-avatars.com/api/?name=${encodeURIComponent(rc.userName)}&background=00bcd4&color=fff`;
+    const own=rc.userId===currentUserId;
+    const likesCount=rc.likes?Object.keys(rc.likes).length:0;const likedByUser=currentUserId&&rc.likes&&rc.likes[currentUserId];
+    const replyDiv=document.createElement('div');replyDiv.className='comment-item';replyDiv.dataset.commentId=rid;
+    replyDiv.innerHTML=`<div class="comment-header" onclick="event.stopPropagation(); window.visitUserProfile('${escapeOnclick(rc.userId)}')"><img src="${av}" class="comment-avatar" onerror="this.src='https://ui-avatars.com/api/?name=U&background=1a1a2e&color=fff'"><span class="comment-author">${escapeHtml(rc.userName)}</span><span class="comment-time">${getTimeAgo(rc.timestamp)}</span></div><div class="comment-text">${escapeHtml(rc.text)}</div><div class="comment-actions-row"><button class="comment-like-btn ${likedByUser?'liked':''}" onclick="event.preventDefault();event.stopPropagation();window.toggleCommentLike('${escapeOnclick(pid)}','${escapeOnclick(rid)}', event)"><i class="${likedByUser?'fas':'far'} fa-heart"></i> ${likesCount||''}</button>${own?`<button class="comment-edit-btn" onclick="event.stopPropagation();window.showEditCommentPopup('${escapeOnclick(pid)}','${escapeOnclick(rid)}','${escapeOnclick(rc.text)}')"><i class="fas fa-pen"></i></button><button class="comment-delete-btn" onclick="event.stopPropagation();window.showDeleteCommentPopup('${escapeOnclick(pid)}','${escapeOnclick(rid)}')"><i class="fas fa-trash"></i></button>`:''}</div>`;
+    container.appendChild(replyDiv);
+  });
+  container.classList.add('active');
+};
+
+window.visitUserProfile=(uid)=>{if(!uid||uid==='unknown')return;window.location.href=`../profile/profile.html?user=${uid}`;};
+window.shareTutorial=(id,title,link)=>{if(navigator.share)navigator.share({title,url:link}).catch(()=>navigator.clipboard.writeText(link).then(()=>showToast('Link copied!')));else navigator.clipboard.writeText(link).then(()=>showToast('Link copied!'));};
+
+onAuthStateChanged(auth,async user=>{if(user){currentUserId=user.uid;await loadProfile(currentUserId);loadTutorials();initAllNotifications();}else window.location.href="../index.html";});
+document.addEventListener('DOMContentLoaded',()=>{localStorage.setItem('homeLastSeen',Date.now());$('homeDot')?.classList.remove('active');});
+</script>
+</body>
+</html>
