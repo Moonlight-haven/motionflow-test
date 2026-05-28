@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motion Flow | Sign Up</title>
+    <script src="../config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -82,8 +83,11 @@
         
         .logo-text {
             font-family: 'Orbitron', sans-serif;
-            color: #ffffff;
-            text-shadow: none;
+            background: linear-gradient(135deg, #00bcd4, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
 
         .avatar-circle {
@@ -247,7 +251,6 @@
             transform: scale(1.05);
         }
 
-        /* Brand header with back arrow */
         .brand-header {
             display: flex;
             align-items: center;
@@ -278,7 +281,6 @@
             flex-shrink: 0;
         }
 
-        /* Centered header (no back arrow) */
         .centered-header {
             text-align: center;
             margin-bottom: 24px;
@@ -298,10 +300,8 @@
     
     <div id="app-container" class="w-full max-w-md">
         
-        <!-- Sign Up View -->
         <div id="signup-view">
             <div class="liquid-glass-card p-6 sm:p-8 md:p-10 rounded-xl shadow-2xl">
-                <!-- Sign Up Header (no back arrow) -->
                 <div id="signup-header" class="centered-header">
                     <h1 class="logo-text">MOTION FLOW</h1>
                     <p class="text-gray-400">Create your account</p>
@@ -373,7 +373,6 @@
                     </div>
                 </div>
 
-                <!-- Verification Form - Brand Header with Back Arrow -->
                 <div id="verification-view" class="hidden">
                     <div class="brand-header">
                         <div class="back-arrow-container">
@@ -415,12 +414,10 @@
                     </button>
                 </div>
                 
-                <!-- Success View -->
                 <div id="success-view" class="hidden"></div>
             </div>
         </div>
 
-        <!-- Profile Setup View -->
         <div id="profile-view" class="hidden">
             <div class="liquid-glass-card p-6 md:p-8 rounded-xl">
                 
@@ -439,7 +436,6 @@
 
                 <div id="profile-message-box" class="hidden p-4 mb-4 rounded-lg text-sm bg-gray-900 border border-gray-800"></div>
 
-                <!-- STEP 1: Choose Avatar -->
                 <div id="step-1" class="step-container active">
                     <h2 class="text-xl font-semibold mb-4 text-center">Choose Your Avatar</h2>
                     
@@ -490,7 +486,6 @@
                     </button>
                 </div>
 
-                <!-- STEP 2: About You -->
                 <div id="step-2" class="step-container">
                     <div class="flex items-center mb-6">
                         <div class="step-back-arrow" onclick="goToStep(1)">
@@ -528,7 +523,6 @@
                     </button>
                 </div>
 
-                <!-- STEP 3: Social Links -->
                 <div id="step-3" class="step-container">
                     <div class="flex items-center mb-6">
                         <div class="step-back-arrow" onclick="goToStep(2)">
@@ -584,7 +578,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
         <div class="liquid-glass-card w-full max-w-sm p-6 rounded-xl text-center">
             <h3 id="modal-title" class="text-xl font-bold text-white mb-3"></h3>
@@ -602,15 +595,8 @@
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
-            authDomain: "motion-flow-47450.firebaseapp.com",
-            projectId: "motion-flow-47450",
-            storageBucket: "motion-flow-47450.firebasestorage.app",
-            messagingSenderId: "686875529848",
-            appId: "1:686875529848:web:48edf5164aaaf938cdd38d",
-            measurementId: "G-K46N8C1HFQ"
-        };
+        // Use centralized config from config.js
+        const firebaseConfig = window.firebaseConfig;
 
         const EMAILJS_PUBLIC_KEY = 'Kn6zCcEIVE789CQou';
         const EMAILJS_SERVICE_ID = 'service_desu1hi';
@@ -706,7 +692,7 @@
                 if (signupForm) signupForm.classList.add('hidden');
                 if (verificationView) verificationView.classList.remove('hidden');
                 if (successView) successView.classList.add('hidden');
-                if (signupHeader) signupHeader.style.display = 'none'; // Hide the signup header
+                if (signupHeader) signupHeader.style.display = 'none';
             } else if (viewId === 'success-view') {
                 if (signupForm) signupForm.classList.add('hidden');
                 if (verificationView) verificationView.classList.add('hidden');
