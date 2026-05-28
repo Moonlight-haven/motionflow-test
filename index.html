@@ -108,7 +108,7 @@
 
         /* Typography */
         h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; }
-        h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); margin-bottom: var(--space-md); background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
+        h1 { font-size: clamp(2.2rem, 6vw, 4.5rem); margin-bottom: var(--space-sm); background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
         h2 { font-size: clamp(1.8rem, 5vw, 3.5rem); margin-bottom: var(--space-lg); text-align: center; }
         h3 { font-size: 1.5rem; margin-bottom: var(--space-sm); }
         p { font-size: 1.125rem; margin-bottom: var(--space-sm); color: var(--color-text-muted); }
@@ -119,13 +119,34 @@
 
         .hero-tagline {
             font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-            margin-bottom: var(--space-lg);
+            margin-bottom: var(--space-sm);
             color: var(--color-text-muted);
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
             text-align: center;
             line-height: 1.5;
+        }
+
+        .community-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(0, 188, 212, 0.08);
+            border: 1px solid rgba(0, 188, 212, 0.25);
+            border-radius: 50px;
+            padding: 0.5rem 1.3rem;
+            margin-bottom: var(--space-md);
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .community-count .count-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-accent);
         }
 
         .video-wrapper { position: relative; width: 100%; padding-top: 56.25%; border-radius: 16px; overflow: hidden; transition: transform var(--transition-normal), box-shadow var(--transition-normal); margin: 0 auto; background: #000; }
@@ -139,24 +160,203 @@
         @keyframes slowPulse { 0% { transform: rotate(0deg) scale(1); opacity: 0.6; } 100% { transform: rotate(180deg) scale(1.1); opacity: 1; } }
         .hero-content { position: relative; z-index: 2; text-align: center; max-width: 900px; margin: 0 auto; }
 
-        .features { background-color: var(--color-dark); position: relative; }
-        .features::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--color-accent), var(--color-accent-alt), transparent); }
+        /* What You'll Get Section */
+        .perks-section {
+            background-color: var(--color-bg);
+            position: relative;
+        }
+        .perks-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-accent-alt), var(--color-accent), transparent);
+        }
         .section-subtitle { text-align: center; font-size: 1.2rem; color: var(--color-text-muted); max-width: 650px; margin: 0 auto var(--space-xl); }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-xl); }
-        .feature-card { background-color: var(--color-bg-light); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: var(--space-lg); transition: all var(--transition-normal); position: relative; overflow: hidden; --card-glow-color: var(--glow-blue); }
-        .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.07), transparent 50%); opacity: 0; transition: opacity var(--transition-normal); pointer-events: none; }
-        .feature-card:hover::before { opacity: 1; }
-        .feature-card:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 20px var(--card-glow-color), 0 15px 35px rgba(0, 0, 0, 0.6); }
-        .feature-card:nth-child(1) { --card-glow-color: var(--glow-blue); }
-        .feature-card:nth-child(2) { --card-glow-color: var(--glow-orange); }
-        .feature-card:nth-child(3) { --card-glow-color: var(--glow-purple); }
-        .card-icon { font-size: 2.8rem; margin-bottom: var(--space-md); display: inline-block; background: linear-gradient(135deg, var(--color-accent), var(--color-accent-alt)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .perks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+        .perk-card {
+            background: var(--color-bg-light);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: var(--space-lg);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .perk-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 188, 212, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+        .perk-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-sm);
+            display: inline-block;
+        }
+        .perk-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+        }
+        .perk-card p {
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            line-height: 1.5;
+        }
+        .perk-highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0, 188, 212, 0.15), rgba(249, 115, 22, 0.15));
+            color: var(--color-accent);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            letter-spacing: 0.5px;
+        }
 
-        .btn-group { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-top: var(--space-lg); }
+        /* Upgraded Features Section */
+        .features {
+            background-color: var(--color-dark);
+            position: relative;
+            padding: var(--space-xl) 0;
+        }
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-accent), var(--color-secondary), var(--color-accent-alt), transparent);
+        }
+        .features-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+        .features-header .label {
+            display: inline-block;
+            font-family: var(--font-heading);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--color-accent);
+            margin-bottom: var(--space-sm);
+            padding: 0.3rem 1rem;
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            border-radius: 20px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: var(--space-lg);
+        }
+        .feature-card {
+            background: linear-gradient(145deg, var(--color-bg-light), rgba(26, 26, 46, 0.6));
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: var(--space-lg);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            opacity: 0.08;
+            transition: all 0.6s ease;
+            pointer-events: none;
+        }
+        .feature-card:nth-child(1)::after { background: var(--color-accent); }
+        .feature-card:nth-child(2)::after { background: var(--color-accent-alt); }
+        .feature-card:hover::after {
+            transform: scale(3);
+            opacity: 0.12;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+        .feature-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .feature-card:nth-child(1) .feature-card-icon {
+            background: rgba(0, 188, 212, 0.15);
+            color: var(--color-accent);
+        }
+        .feature-card:nth-child(2) .feature-card-icon {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--color-accent-alt);
+        }
+        .feature-card h3 {
+            font-size: 1.4rem;
+            color: var(--color-text);
+            margin: 0;
+        }
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .feature-stats {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: auto;
+            padding-top: var(--space-sm);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .feature-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .feature-stat .stat-number {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+        .feature-stat .stat-label {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-group { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-top: 0; }
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.9rem 2.2rem; font-family: var(--font-heading); font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; background: transparent; color: var(--color-accent); border: 2px solid var(--color-accent); border-radius: 60px; cursor: pointer; transition: all var(--transition-normal); text-decoration: none; }
         .btn:hover { background-color: rgba(0, 188, 212, 0.08); transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 188, 212, 0.2); }
         .btn-primary { background-color: var(--color-accent); color: var(--color-dark); border-color: var(--color-accent); box-shadow: 0 6px 14px rgba(0, 188, 212, 0.3); }
         .btn-primary:hover { background-color: var(--color-accent); transform: translateY(-3px); box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.4), 0 12px 28px rgba(0, 188, 212, 0.15); }
+
+        .cta { text-align: center; }
+        .cta-content { max-width: 700px; margin: 0 auto; }
+        .cta h2 { margin-bottom: var(--space-sm); }
+        .cta p { margin-bottom: var(--space-lg); }
 
         .footer { background-color: var(--color-dark); padding: var(--space-md) 0; border-top: 1px solid rgba(255, 255, 255, 0.05); }
         .footer-content { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); }
@@ -173,6 +373,8 @@
             .btn-signup-float, .btn-login-float { padding: 0.4rem 1.2rem; font-size: 0.75rem; }
             .btn-group { flex-direction: column; align-items: stretch; }
             .btn { width: 100%; }
+            .perks-grid { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -193,16 +395,20 @@
                 <div class="hero-content">
                     <h1>MOTION <span class="text-gradient">FLOW</span></h1>
                     
-                    <!-- Clean tagline without number -->
                     <div class="hero-tagline scroll-fade">
                         Where motion meets creativity. Join and become a creator.<br>
                         Connect with <span class="text-gradient">After Effects and Alight Motion Editors</span> and 
                         <span class="text-gradient">visionary creators</span> shaping the future of editing.
                     </div>
-                    
+
+                    <div class="community-count scroll-fade">
+                        <i class="fas fa-users"></i>
+                        <span>Join <span class="count-number" id="userCount">0</span>+ creators</span>
+                    </div>
+
                     <div class="btn-group">
                         <a href="sign-up.html" class="btn btn-primary" id="heroJoinBtn">Join Us Now →</a>
-                        <a href="#features" class="btn" id="learnMoreBtn">Explore Features</a>
+                        <a href="#perks" class="btn" id="learnMoreBtn">See What You Get</a>
                     </div>
                     
                     <div class="video-wrapper hero-video scroll-fade">
@@ -216,20 +422,90 @@
             </div>
         </section>
 
+        <!-- What You'll Get Section -->
+        <section class="perks-section" id="perks">
+            <div class="container">
+                <h2 class="scroll-fade">What <span class="text-gradient">You'll Get</span></h2>
+                <p class="section-subtitle scroll-fade">Everything you need to level up your editing game — completely free.</p>
+                <div class="perks-grid">
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">🛠️</div>
+                        <h3>Free Editing Tools</h3>
+                        <p>Access premium presets, plugins, scripts, and templates for After Effects & Alight Motion — all free.</p>
+                        <span class="perk-highlight">500+ Resources</span>
+                    </div>
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">📦</div>
+                        <h3>Free Editing Packs</h3>
+                        <p>Download complete editing packs with transitions, LUTs, sound FX, overlays, and project files.</p>
+                        <span class="perk-highlight">Updated Weekly</span>
+                    </div>
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">💬</div>
+                        <h3>Chat With Editors</h3>
+                        <p>Connect with thousands of editors in real-time. Share tips, get feedback, and collaborate on projects.</p>
+                        <span class="perk-highlight">Live Chat 24/7</span>
+                    </div>
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">🎓</div>
+                        <h3>Expert Tutorials</h3>
+                        <p>Learn from pro editors with step-by-step tutorials covering everything from basics to advanced techniques.</p>
+                        <span class="perk-highlight">New Lessons Daily</span>
+                    </div>
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">🏆</div>
+                        <h3>Community Challenges</h3>
+                        <p>Participate in editing contests, win recognition, and showcase your work to the entire community.</p>
+                        <span class="perk-highlight">Prizes & Badges</span>
+                    </div>
+                    <div class="perk-card scroll-fade">
+                        <div class="perk-icon">📱</div>
+                        <h3>APK & App Sharing</h3>
+                        <p>Get access to modded APKs, editing apps, and mobile tools shared by the community.</p>
+                        <span class="perk-highlight">Safe & Verified</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upgraded Features Section -->
         <section class="features" id="features">
             <div class="container">
-                <h2 class="scroll-fade">Forge Your <span class="text-gradient">Flow</span>. Meet Other Great<span class="text-gradient"> Editors</span>.</h2>
-                <p class="section-subtitle scroll-fade">Access exclusive tools, connect with industry legends, and transform your Edits.</p>
+                <div class="features-header scroll-fade">
+                    <span class="label">The Community</span>
+                    <h2>Forge Your <span class="text-gradient">Flow</span>.<br>Meet Legendary <span class="text-gradient">Editors</span>.</h2>
+                    <p class="section-subtitle">Access exclusive resources, connect with industry legends, and transform your edits from basic to breathtaking.</p>
+                </div>
                 <div class="features-grid">
                     <div class="feature-card scroll-fade">
-                        <div class="card-icon">⚡</div>
-                        <h3>Talk to Big Editors</h3>
-                        <p>Connect directly with legendary After Effects editors. Get personalized feedback and exclusive tutorials from the masters who shape visual trends.</p>
+                        <div class="feature-card-icon">⚡</div>
+                        <h3>Learn From The Best</h3>
+                        <p>Get direct access to legendary After Effects & Alight Motion editors. Receive personalized feedback, watch exclusive behind-the-scenes breakdowns, and learn techniques that top studios use daily.</p>
+                        <div class="feature-stats">
+                            <div class="feature-stat">
+                                <span class="stat-number">50+</span>
+                                <span class="stat-label">Pro Mentors</span>
+                            </div>
+                            <div class="feature-stat">
+                                <span class="stat-number">Daily</span>
+                                <span class="stat-label">Feedback</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="feature-card scroll-fade">
-                        <div class="card-icon">🎨</div>
-                        <h3>Master Motion Design</h3>
-                        <p>Access premium resources, custom effects, and project files shared exclusively within the Motion-Flow community. Transform from amateur to pro.</p>
+                        <div class="feature-card-icon">🎨</div>
+                        <h3>Master Your Craft</h3>
+                        <p>Unlock premium project files, custom effects, and exclusive templates shared only within our community. Go from beginner to professional with resources trusted by thousands of creators worldwide.</p>
+                        <div class="feature-stats">
+                            <div class="feature-stat">
+                                <span class="stat-number">1000+</span>
+                                <span class="stat-label">Resources</span>
+                            </div>
+                            <div class="feature-stat">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Support</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,34 +534,79 @@
         </footer>
     </main>
 
-    <script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
+            authDomain: "motion-flow-47450.firebasestorage.app",
+            databaseURL: "https://motion-flow-47450-default-rtdb.firebaseio.com",
+            projectId: "motion-flow-47450",
+            storageBucket: "motion-flow-47450.firebasestorage.app",
+            messagingSenderId: "686875529848",
+            appId: "1:686875529848:web:48edf5164aaaf938cdd38d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+
+        // Animated counting function
+        function animateCount(element, target) {
+            const start = parseInt(element.textContent) || 0;
+            if (start === target) return;
+            
+            const duration = 1500;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = Math.floor(start + (target - start) * eased);
+                element.textContent = current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target.toLocaleString();
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Get real-time user count from Firebase
+        const usersRef = ref(db, 'users');
+        let previousCount = 0;
+        
+        onValue(usersRef, (snapshot) => {
+            const userCountEl = document.getElementById('userCount');
+            let count = 0;
+            
+            if (snapshot.exists()) {
+                const usersData = snapshot.val();
+                count = Object.keys(usersData).length;
+            }
+            
+            if (count !== previousCount) {
+                animateCount(userCountEl, count);
+                previousCount = count;
+            }
+        }, (error) => {
+            document.getElementById('userCount').textContent = '100';
+        });
+
         // Smooth scroll for Learn More button
         const learnBtn = document.getElementById('learnMoreBtn');
         if (learnBtn) {
             learnBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                document.getElementById('features').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('perks').scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         }
-
-        // Mouse tracking for glow cards
-        const cards = document.querySelectorAll('.feature-card');
-        let ticking = false;
-        cards.forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        const rect = card.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        card.style.setProperty('--mouse-x', `${x}px`);
-                        card.style.setProperty('--mouse-y', `${y}px`);
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            });
-        });
 
         // Intersection Observer for scroll animations
         const fadeElements = document.querySelectorAll('.scroll-fade');
