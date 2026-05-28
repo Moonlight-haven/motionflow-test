@@ -595,9 +595,6 @@
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Use centralized config from config.js
-        const firebaseConfig = window.firebaseConfig;
-
         const EMAILJS_PUBLIC_KEY = 'Kn6zCcEIVE789CQou';
         const EMAILJS_SERVICE_ID = 'service_desu1hi';
         const EMAILJS_TEMPLATE_ID = 'template_51sjsln';
@@ -1328,7 +1325,7 @@
         const initializeApplication = async () => {
             try {
                 emailjs.init(EMAILJS_PUBLIC_KEY);
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(window.firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 const signupBtn = document.getElementById('signup-button');
