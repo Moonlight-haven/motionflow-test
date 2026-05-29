@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Motion-Flow | Motion Graphics Community</title>
     <meta name="description" content="Join motion designers from around the world. Connect with After Effects masters and elevate your craft.">
+    <script src="config.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -154,6 +155,8 @@
         .video-wrapper.hero-video:hover { transform: scale(1.01); box-shadow: 0 0 25px rgba(0, 188, 212, 0.5); }
         .video-wrapper .video-preview-media { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
         .video-caption { max-width: 800px; margin: 0 auto; text-align: center; font-family: var(--font-heading); font-size: 0.75rem; color: var(--color-text-muted); letter-spacing: 2px; text-transform: uppercase; background-color: var(--color-bg-light); padding: 0.75rem var(--space-sm); border-top: 2px solid var(--color-accent); border-radius: 0 0 16px 16px; }
+        .video-caption a { color: var(--color-accent); text-decoration: none; transition: color var(--transition-fast); }
+        .video-caption a:hover { color: var(--color-accent-alt); text-decoration: underline; }
 
         .hero { min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; }
         .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 30%, rgba(0, 188, 212, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%); animation: slowPulse 25s ease-in-out infinite alternate; z-index: -1; }
@@ -417,7 +420,7 @@
                             Your browser does not support the video tag.
                         </video>
                     </div>
-                    <div class="video-caption scroll-fade">⚡MOTION FLOW PREVIEW⚡</div>
+                    <div class="video-caption scroll-fade">⚡EDIT PREVIEW | EDITOR - <a href="https://youtube.com/@noctryx7?si=L8qbzlEC8C0b3IPb" target="_blank" rel="noopener noreferrer">@Noctry</a>⚡</div>
                 </div>
             </div>
         </section>
@@ -426,12 +429,12 @@
         <section class="perks-section" id="perks">
             <div class="container">
                 <h2 class="scroll-fade">What <span class="text-gradient">You'll Get</span></h2>
-                <p class="section-subtitle scroll-fade">Everything you need to level up your editing game — completely free.</p>
+                <p class="section-subtitle scroll-fade">Everything you need to level up your editing game — Free/Paid Premium Tools.</p>
                 <div class="perks-grid">
                     <div class="perk-card scroll-fade">
                         <div class="perk-icon">🛠️</div>
                         <h3>Free Editing Tools</h3>
-                        <p>Access premium presets, plugins, scripts, and templates for After Effects & Alight Motion — all free.</p>
+                        <p>Access premium presets, plugins, scripts, and templates for After Effects & Alight Motion.</p>
                         <span class="perk-highlight">500+ Resources</span>
                     </div>
                     <div class="perk-card scroll-fade">
@@ -454,13 +457,13 @@
                     </div>
                     <div class="perk-card scroll-fade">
                         <div class="perk-icon">🏆</div>
-                        <h3>Community Challenges</h3>
-                        <p>Participate in editing contests, win recognition, and showcase your work to the entire community.</p>
+                        <h3>Cheap Products</h3>
+                        <p>Get high quality editing packs and tools for cheap prices.</p>
                         <span class="perk-highlight">Prizes & Badges</span>
                     </div>
                     <div class="perk-card scroll-fade">
                         <div class="perk-icon">📱</div>
-                        <h3>APK & App Sharing</h3>
+                        <h3>CRACKED APK</h3>
                         <p>Get access to modded APKs, editing apps, and mobile tools shared by the community.</p>
                         <span class="perk-highlight">Safe & Verified</span>
                     </div>
@@ -473,7 +476,7 @@
             <div class="container">
                 <div class="features-header scroll-fade">
                     <span class="label">The Community</span>
-                    <h2>Forge Your <span class="text-gradient">Flow</span>.<br>Meet Legendary <span class="text-gradient">Editors</span>.</h2>
+                    <h2>Forge Your <span class="text-gradient">Flow</span>.<br>Meet Pro <span class="text-gradient">Editors</span>.</h2>
                     <p class="section-subtitle">Access exclusive resources, connect with industry legends, and transform your edits from basic to breathtaking.</p>
                 </div>
                 <div class="features-grid">
@@ -528,7 +531,7 @@
                         <a href="privacy.html" class="footer-link">Privacy Policy</a>
                         <a href="terms.html" class="footer-link">Terms of Service</a>
                     </div>
-                    <p class="copyright">© 2025 Motion-Flow. All rights reserved. Crafted for creators.</p>
+                    <p class="copyright">© 2026 Motion-Flow. All rights reserved. Crafted for creators.</p>
                 </div>
             </div>
         </footer>
@@ -538,20 +541,21 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCy5uQGcg1cALqFSa1xAQOL6lX8Gz5nFNU",
-            authDomain: "motion-flow-47450.firebasestorage.app",
-            databaseURL: "https://motion-flow-47450-default-rtdb.firebaseio.com",
-            projectId: "motion-flow-47450",
-            storageBucket: "motion-flow-47450.firebasestorage.app",
-            messagingSenderId: "686875529848",
-            appId: "1:686875529848:web:48edf5164aaaf938cdd38d"
-        };
-
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(window.firebaseConfig);
+        const auth = getAuth(app);
         const db = getDatabase();
+
+        // Check if user is already logged in - if so, redirect to homepage
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect to homepage
+                window.location.href = 'homepage.html';
+            }
+            // If no user, stay on this landing page (do nothing)
+        });
 
         // Animated counting function
         function animateCount(element, target) {
